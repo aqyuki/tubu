@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/aqyuki/tubu/compare/v1.0.0...v1.0.1) (2024-08-13)
+
+
+### Bug Fixes
+
+* fixed an issue where metadata could not be embedded in Docker images. ([#30](https://github.com/aqyuki/tubu/issues/30)) ([32a6838](https://github.com/aqyuki/tubu/commit/32a6838d9f83dcbf20ee6b99d98db95188012b16))
+
 ## 1.0.0 (2024-08-13)
 
 
