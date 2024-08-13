@@ -15,24 +15,28 @@ var (
 )
 
 type Bot struct {
-	session  *discordgo.Session
-	metadata *metadata.Metadata
-	handler  *Handler
-	config   *Config
-	remover  []func()
+	session           *discordgo.Session
+	metadata          *metadata.Metadata
+	handler           *Handler
+	config            *Config
+	commandRouter     *CommandRouter
+	remover           []func()
+	registeredCommand []*discordgo.ApplicationCommand
 }
 
-func NewBot(md *metadata.Metadata, cfg *Config, handler *Handler) *Bot {
+func NewBot(md *metadata.Metadata, cfg *Config, handler *Handler, cmd *CommandRouter) *Bot {
 	if cfg == nil {
 		cfg = DefaultConfig()
 	}
 
 	return &Bot{
-		session:  nil, // Session is initialized at bot startup
-		metadata: md,
-		config:   cfg,
-		handler:  handler,
-		remover:  make([]func(), 0),
+		session:           nil, // Session is initialized at bot startup
+		metadata:          md,
+		config:            cfg,
+		handler:           handler,
+		commandRouter:     cmd,
+		remover:           make([]func(), 0),
+		registeredCommand: make([]*discordgo.ApplicationCommand, 0),
 	}
 }
 
@@ -60,7 +64,14 @@ func (b *Bot) Start(token string) error {
 	if err := b.session.Open(); err != nil {
 		return fmt.Errorf("tried to open a session to activate the bot, but failed to open the session with error: %w", err)
 	}
-	// TODO: register commands
+
+	if b.commandRouter != nil {
+		registered, err := b.session.ApplicationCommandBulkOverwrite(b.session.State.User.ID, "", b.commandRouter.Commands())
+		if err != nil {
+			return fmt.Errorf("tried to register commands to enable application command, but failed to register commands with error: %w", err)
+		}
+		b.registeredCommand = registered
+	}
 	return nil
 }
 
@@ -74,7 +85,11 @@ func (b *Bot) Shutdown() error {
 		r()
 	}
 
-	// TODO: Unregister commands
+	for _, c := range b.registeredCommand {
+		if err := b.session.ApplicationCommandDelete(b.session.State.User.ID, "", c.ID); err != nil {
+			return fmt.Errorf("tried to delete the command to disable application command, but failed to delete the command with error: %w", err)
+		}
+	}
 
 	if err := b.session.Close(); err != nil {
 		return fmt.Errorf("tried to close the session to shut down the bot, but failed to close the session with error: %w", err)
