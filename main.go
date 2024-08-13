@@ -60,6 +60,7 @@ func run(ctx context.Context) exitCode {
 	router := discord.NewCommandRouter(
 		discord.WithCommandContextFunc(BuildContextFunc(ctx)),
 		discord.WithCommand(command.NewVersionCommand(md)),
+		discord.WithCommand(command.NewDiceCommand()),
 	)
 
 	discordBot := discord.NewBot(md, config, handler, router)
