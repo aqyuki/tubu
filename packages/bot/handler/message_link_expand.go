@@ -8,18 +8,22 @@ import (
 	"time"
 
 	"github.com/aqyuki/tubu/packages/bot/common"
+	"github.com/aqyuki/tubu/packages/cache"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/bwmarrin/discordgo"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
 type ExpandHandler struct {
-	rgx *regexp.Regexp
+	rgx   *regexp.Regexp
+	cache *cache.InMemoryCacheStore[discordgo.Channel]
 }
 
-func NewExpandHandler() *ExpandHandler {
+func NewExpandHandler(cache *cache.InMemoryCacheStore[discordgo.Channel]) *ExpandHandler {
 	return &ExpandHandler{
-		rgx: regexp.MustCompile(`https://(?:ptb\.|canary\.)?discord(app)?\.com/channels/(\d+)/(\d+)/(\d+)`),
+		rgx:   regexp.MustCompile(`https://(?:ptb\.|canary\.)?discord(app)?\.com/channels/(\d+)/(\d+)/(\d+)`),
+		cache: cache,
 	}
 }
 
@@ -48,10 +52,15 @@ func (h *ExpandHandler) Expand(ctx context.Context, s *discordgo.Session, m *dis
 		return
 	}
 
-	channel, err := s.Channel(ids.channel)
-	if err != nil {
-		logger.Error("failed to get the channel")
-		return
+	channel, ok := h.cache.Get(ids.channel)
+	if !ok {
+		ch, err := s.Channel(ids.channel)
+		if err != nil {
+			logger.Error("failed to get the channel")
+			return
+		}
+		h.cache.Set(ids.channel, lo.FromPtr(ch))
+		channel = ch
 	}
 	if channel.NSFW {
 		logger.Infof("skip the processing because the channel is NSFW.")
