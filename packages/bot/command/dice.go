@@ -61,10 +61,14 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 
 		countOpt, ok := optionMap[diceCommandCountOptionName]
 		if !ok {
+			logger.Error("option is not found", "name", diceCommandCountOptionName)
+			s.InteractionRespond(ic.Interaction, c.errorResponse(diceCommandCountOptionName))
 			return
 		}
 		faceOpt, ok := optionMap[diceCommandFaceOptionName]
 		if !ok {
+			logger.Error("option is not found", "name", diceCommandFaceOptionName)
+			s.InteractionRespond(ic.Interaction, c.errorResponse(diceCommandFaceOptionName))
 			return
 		}
 
@@ -101,5 +105,22 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 		}); err != nil {
 			logger.Error("failed to respond to the interaction", "error", err)
 		}
+	}
+}
+
+func (c *DiceCommand) errorResponse(name string) *discordgo.InteractionResponse {
+	return &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{{
+				Title:       "内部エラー",
+				Color:       common.EmbedColor,
+				Description: "エラーが発生したようです．責任持って修正してください．",
+				Fields: []*discordgo.MessageEmbedField{{
+					Name:  "Error",
+					Value: fmt.Sprintf("Option `%s` is not found", name),
+				}},
+			}},
+		},
 	}
 }
