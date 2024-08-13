@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aqyuki/tubu/packages/bot/common"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
@@ -34,7 +35,7 @@ func (c *VersionCommand) Handler() discord.InteractionCreateHandler {
 
 		embed := &discordgo.MessageEmbed{
 			Title:       "現在のバージョン",
-			Color:       EmbedColor,
+			Color:       common.EmbedColor,
 			Description: fmt.Sprintf("現在のバージョンは `%s` です", c.md.Version),
 		}
 		if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
