@@ -2,18 +2,18 @@ package main
 
 import (
 	"context"
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
+	"github.com/aqyuki/tubu/internal/config"
 	"github.com/aqyuki/tubu/packages/bot/command"
 	"github.com/aqyuki/tubu/packages/bot/handler"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
-	"github.com/samber/lo"
+	"github.com/caarlos0/env/v11"
+	"go.uber.org/zap"
 )
 
 type exitCode int
@@ -21,10 +21,6 @@ type exitCode int
 const (
 	ExitSuccess exitCode = iota
 	ExitFailure
-)
-
-var (
-	timeout = lo.FromPtr(flag.Duration("timeout", 10*time.Second, "API request timeout"))
 )
 
 func main() {
@@ -38,18 +34,18 @@ func run(ctx context.Context) exitCode {
 	defer done()
 	logger := logging.FromContext(ctx)
 
-	logger.Infof("try to load DISCORD_TOKEN")
-	token, ok := os.LookupEnv("DISCORD_TOKEN")
-	if !ok {
-		logger.Errorf("DISCORD_TOKEN is not set")
+	logger.Infof("try to load application config")
+	cfg, err := env.ParseAs[config.Config]()
+	if err != nil {
+		logger.Errorf("tried to load application config but failed with error: %v", err)
 		return ExitFailure
 	}
-	logger.Infof("DISCORD_TOKEN was successfully loaded")
+	logger.Infow("loaded application config", zap.Any("config", cfg))
 
 	md := metadata.GetMetadata()
 
 	config := discord.NewConfig(
-		discord.WithAPITimeout(timeout),
+		discord.WithAPITimeout(cfg.APITimeout),
 	)
 
 	contextFunc := func() context.Context {
@@ -67,7 +63,7 @@ func run(ctx context.Context) exitCode {
 	)
 
 	discordBot := discord.NewBot(md, config, handler, router)
-	if err := discordBot.Start(token); err != nil {
+	if err := discordBot.Start(cfg.Token); err != nil {
 		logger.Errorf("tried to start discord bot but failed with error: %v", err)
 		return ExitFailure
 	}
