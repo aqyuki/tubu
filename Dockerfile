@@ -1,14 +1,14 @@
+FROM golang:1.22.6 AS builder
+
 ARG BOT_VERSION=unknown
 ARG BUILD_DATE=unknown
 ARG COMMIT_HASH=unknown
-
-FROM golang:1.22.6 AS builder
 
 WORKDIR /app
 RUN --mount=type=bind,target=. go mod download
 RUN --mount=type=bind,target=. go mod verify
 RUN --mount=type=bind,target=. go build -o /dist/tubu -ldflags="-s -w \
-  -X 'github.com/aqyuki/tubu/packages/metadata.Version=${BOT_VERSION}' \
+  -X 'github.com/aqyuki/tubu/packages/metadata.Version=${BOT_VERSION}}' \
   -X 'github.com/aqyuki/tubu/packages/metadata.GoVersion=$(go version | awk '{print $3}' | sed 's/go//')' \
   -X 'github.com/aqyuki/tubu/packages/metadata.BuildDate=${BUILD_DATE}' \
   -X 'github.com/aqyuki/tubu/packages/metadata.CommitHash=${COMMIT_HASH}'" \
