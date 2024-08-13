@@ -9,9 +9,12 @@ import (
 
 type ReadyHandler func(context.Context, *discordgo.Session, *discordgo.Ready)
 
+type MessageCreateHandler func(context.Context, *discordgo.Session, *discordgo.MessageCreate)
+
 type Handler struct {
-	readyHandler []ReadyHandler
-	contextFunc  func() context.Context
+	readyHandler         []ReadyHandler
+	messageCreateHandler []MessageCreateHandler
+	contextFunc          func() context.Context
 }
 
 // HandlerOption is a functional option for Handler.
@@ -31,6 +34,13 @@ func WithContextFunc(f func() context.Context) HandlerOption {
 func WithReadyHandler(handler ReadyHandler) HandlerOption {
 	return func(h *Handler) {
 		h.readyHandler = append(h.readyHandler, handler)
+	}
+}
+
+// WithMessageCreateHandler adds a MessageCreateHandler to the Handler.
+func WithMessageCreateHandler(handler MessageCreateHandler) HandlerOption {
+	return func(h *Handler) {
+		h.messageCreateHandler = append(h.messageCreateHandler, handler)
 	}
 }
 
@@ -55,6 +65,20 @@ func (h *Handler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 		wg.Add(1)
 		go func(h ReadyHandler) {
 			h(ctx, s, r)
+			wg.Done()
+		}(handler)
+	}
+	wg.Wait()
+}
+
+// HandleMessageCreate handles the MessageCreate event.
+func (h *Handler) HandleMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	var wg sync.WaitGroup
+	ctx := h.contextFunc()
+	for _, handler := range h.messageCreateHandler {
+		wg.Add(1)
+		go func(h MessageCreateHandler) {
+			h(ctx, s, m)
 			wg.Done()
 		}(handler)
 	}
