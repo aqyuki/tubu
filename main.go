@@ -34,6 +34,7 @@ func run(ctx context.Context) exitCode {
 	defer done()
 	logger := logging.FromContext(ctx)
 
+	// load application config
 	logger.Infof("try to load application config")
 	cfg, err := env.ParseAs[config.Config]()
 	if err != nil {
@@ -42,23 +43,17 @@ func run(ctx context.Context) exitCode {
 	}
 	logger.Infow("loaded application config", zap.Any("config", cfg))
 
+	// initialize discord bot
 	md := metadata.GetMetadata()
-
 	config := discord.NewConfig(
 		discord.WithAPITimeout(cfg.APITimeout),
 	)
-
-	contextFunc := func() context.Context {
-		return ctx
-	}
-
 	handler := discord.NewHandler(
-		discord.WithContextFunc(contextFunc),
+		discord.WithContextFunc(BuildContextFunc(ctx)),
 		discord.WithReadyHandler(handler.ReadyHandler(md)),
 	)
-
 	router := discord.NewCommandRouter(
-		discord.WithCommandContextFunc(contextFunc),
+		discord.WithCommandContextFunc(BuildContextFunc(ctx)),
 		discord.WithCommand(command.NewVersionCommand(md)),
 	)
 
@@ -75,6 +70,12 @@ func run(ctx context.Context) exitCode {
 		return ExitFailure
 	}
 	return ExitSuccess
+}
+
+func BuildContextFunc(ctx context.Context) func() context.Context {
+	return func() context.Context {
+		return ctx
+	}
 }
 
 func exit[T ~int](code T) {
