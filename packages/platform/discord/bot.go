@@ -17,10 +17,12 @@ var (
 type Bot struct {
 	session  *discordgo.Session
 	metadata *metadata.Metadata
+	handler  *Handler
 	config   *Config
+	remover  []func()
 }
 
-func NewBot(md *metadata.Metadata, cfg *Config) *Bot {
+func NewBot(md *metadata.Metadata, cfg *Config, handler *Handler) *Bot {
 	if cfg == nil {
 		cfg = DefaultConfig()
 	}
@@ -29,6 +31,8 @@ func NewBot(md *metadata.Metadata, cfg *Config) *Bot {
 		session:  nil, // Session is initialized at bot startup
 		metadata: md,
 		config:   cfg,
+		handler:  handler,
+		remover:  make([]func(), 0),
 	}
 }
 
@@ -48,7 +52,10 @@ func (b *Bot) Start(token string) error {
 	}
 	b.session.Client = client
 
-	// TODO: Add event handlers
+	if b.handler != nil {
+		b.remover = append(b.remover, b.session.AddHandler(b.handler.HandleReady))
+	}
+
 	if err := b.session.Open(); err != nil {
 		return fmt.Errorf("tried to open a session to activate the bot, but failed to open the session with error: %w", err)
 	}
@@ -62,7 +69,10 @@ func (b *Bot) Shutdown() error {
 		return ErrNoRunningBot
 	}
 
-	// TODO: Remove event handlers
+	for _, r := range b.remover {
+		r()
+	}
+
 	// TODO: Unregister commands
 
 	if err := b.session.Close(); err != nil {
