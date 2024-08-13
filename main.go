@@ -5,13 +5,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/aqyuki/tubu/internal/config"
 	"github.com/aqyuki/tubu/packages/bot/command"
 	"github.com/aqyuki/tubu/packages/bot/handler"
+	"github.com/aqyuki/tubu/packages/cache"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
+	"github.com/bwmarrin/discordgo"
 	"github.com/caarlos0/env/v11"
 	"go.uber.org/zap"
 )
@@ -45,12 +48,14 @@ func run(ctx context.Context) exitCode {
 
 	// initialize discord bot
 	md := metadata.GetMetadata()
+	channelCache := cache.NewInMemoryCacheStore[discordgo.Channel](5*time.Minute, 30*time.Minute)
 	config := discord.NewConfig(
 		discord.WithAPITimeout(cfg.APITimeout),
 	)
 	handler := discord.NewHandler(
 		discord.WithContextFunc(BuildContextFunc(ctx)),
 		discord.WithReadyHandler(handler.ReadyHandler(md)),
+		discord.WithMessageCreateHandler(handler.NewExpandHandler(channelCache).Expand),
 	)
 	router := discord.NewCommandRouter(
 		discord.WithCommandContextFunc(BuildContextFunc(ctx)),
