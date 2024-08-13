@@ -54,6 +54,7 @@ func (b *Bot) Start(token string) error {
 
 	if b.handler != nil {
 		b.remover = append(b.remover, b.session.AddHandler(b.handler.HandleReady))
+		b.remover = append(b.remover, b.session.AddHandler(b.handler.HandleMessageCreate))
 	}
 
 	if err := b.session.Open(); err != nil {
