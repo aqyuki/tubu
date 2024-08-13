@@ -6,7 +6,6 @@ require (
 	github.com/bwmarrin/discordgo v0.28.1
 	github.com/caarlos0/env/v11 v11.2.2
 	github.com/google/go-cmp v0.6.0
-	github.com/samber/lo v1.46.0
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 )
@@ -18,6 +17,5 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
 	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
-	golang.org/x/text v0.16.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
