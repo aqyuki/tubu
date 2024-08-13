@@ -85,12 +85,12 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 			face = math.MaxInt
 		}
 
-		result := make([]string, count)
+		result := make([]string, 0, count)
 		for range count {
 			result = append(result, strconv.Itoa(rand.Intn(int(face))+1))
 		}
 
-		msg := strings.Join(result, " ")
+		msg := strings.Join(result, " + ")
 		embed := &discordgo.MessageEmbed{
 			Title:       "サイコロ",
 			Color:       common.EmbedColor,
