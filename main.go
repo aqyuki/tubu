@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aqyuki/tubu/packages/bot/command"
 	"github.com/aqyuki/tubu/packages/bot/handler"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
@@ -62,6 +63,7 @@ func run(ctx context.Context) exitCode {
 
 	router := discord.NewCommandRouter(
 		discord.WithCommandContextFunc(contextFunc),
+		discord.WithCommand(command.NewVersionCommand(md)),
 	)
 
 	discordBot := discord.NewBot(md, config, handler, router)
