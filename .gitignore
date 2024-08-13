@@ -11,3 +11,6 @@ go.work.sum
 
 # environment file
 .env
+
+# binary
+bin/
