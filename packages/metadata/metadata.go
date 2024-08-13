@@ -9,10 +9,10 @@ var (
 )
 
 var (
-	Version    string
-	GoVersion  string
-	BuildDate  string
-	CommitHash string
+	Version    string = "development"
+	GoVersion  string = "unknown"
+	BuildDate  string = "unknown"
+	CommitHash string = "unknown"
 )
 
 // Metadata struct provides methods to get application metadata.
