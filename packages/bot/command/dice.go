@@ -19,6 +19,10 @@ var _ discord.Command = (*DiceCommand)(nil)
 const (
 	diceCommandCountOptionName = "count"
 	diceCommandFaceOptionName  = "face"
+
+	diceCommandMinCount = 1
+	diceCommandMinFace  = 2
+	diceCommandMaxFace  = math.MaxInt
 )
 
 type DiceCommand struct{}
@@ -75,14 +79,14 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 		count := countOpt.IntValue()
 		face := faceOpt.IntValue()
 
-		if count < 1 {
-			count = 1
+		if count < diceCommandMinCount {
+			count = diceCommandMinCount
 		}
 
-		if face < 2 {
-			face = 2
-		} else if face > math.MaxInt {
-			face = math.MaxInt
+		if face < diceCommandMinFace {
+			face = diceCommandMinFace
+		} else if face > diceCommandMaxFace {
+			face = diceCommandMaxFace
 		}
 
 		result := make([]string, 0, count)
@@ -92,9 +96,15 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 
 		msg := strings.Join(result, " + ")
 		embed := &discordgo.MessageEmbed{
-			Title:       "サイコロ",
-			Color:       common.EmbedColor,
-			Description: fmt.Sprintf("Result\n```\n%dd%d → %s\n```", count, face, msg),
+			Title: "ダイスロール",
+			Color: common.EmbedColor,
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:   "Result",
+					Value:  fmt.Sprintf("```\n%dd%d → %s\n```", count, face, msg),
+					Inline: true,
+				},
+			},
 		}
 
 		if err := s.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
