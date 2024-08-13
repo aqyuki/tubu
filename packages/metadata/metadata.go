@@ -9,47 +9,31 @@ var (
 )
 
 var (
-	Version    string
-	GoVersion  string
-	BuildDate  string
-	CommitHash string
+	Version    string = "development"
+	GoVersion  string = "unknown"
+	BuildDate  string = "unknown"
+	CommitHash string = "unknown"
 )
 
 // Metadata struct provides methods to get application metadata.
 type Metadata struct {
-	version    string
-	goVersion  string
-	buildDate  string
-	commitHash string
+	Version    string
+	GoVersion  string
+	BuildDate  string
+	CommitHash string
 }
 
 func GetMetadata() *Metadata {
 	return metadata
 }
 
-func (m *Metadata) Version() string {
-	return m.version
-}
-
-func (m *Metadata) GoVersion() string {
-	return m.goVersion
-}
-
-func (m *Metadata) BuildDate() string {
-	return m.buildDate
-}
-
-func (m *Metadata) CommitHash() string {
-	return m.commitHash
-}
-
 // buildMetadata initialize metadata with version, go version, build date and commit hash.
 func buildMetadata() *Metadata {
 	return &Metadata{
-		version:    Version,
-		goVersion:  GoVersion,
-		buildDate:  BuildDate,
-		commitHash: CommitHash,
+		Version:    Version,
+		GoVersion:  GoVersion,
+		BuildDate:  BuildDate,
+		CommitHash: CommitHash,
 	}
 }
 
