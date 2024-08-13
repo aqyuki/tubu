@@ -66,6 +66,7 @@ func (b *Bot) Start(token string) error {
 	}
 
 	if b.commandRouter != nil {
+		b.remover = append(b.remover, b.session.AddHandler(b.commandRouter.HandleInteractionCreate))
 		registered, err := b.session.ApplicationCommandBulkOverwrite(b.session.State.User.ID, "", b.commandRouter.Commands())
 		if err != nil {
 			return fmt.Errorf("tried to register commands to enable application command, but failed to register commands with error: %w", err)
