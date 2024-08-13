@@ -1,0 +1,21 @@
+version: "3"
+
+vars:
+  METADATA_PATH: github.com/aqyuki/tubu/packages/metadata
+  GO_VERSION:
+    sh: go version | awk '{print $3}' | sed 's/go//'
+  BUILD_DATE:
+    sh: date -u '+%Y-%m-%dT%H:%M:%SZ'
+  COMMIT_HASH:
+    sh: git rev-parse --short HEAD
+
+tasks:
+  build:
+    desc: "Build the bot"
+    cmds:
+      - |
+        go build -ldflags="-s -w \
+        -X '{{.METADATA_PATH}}.GoVersion={{.GO_VERSION}}' \
+        -X '{{.METADATA_PATH}}.BuildDate={{.BUILD_DATE}}' \
+        -X '{{.METADATA_PATH}}.CommitHash={{.COMMIT_HASH}}'" \
+        -o bin/bot main.go
