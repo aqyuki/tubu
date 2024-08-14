@@ -1,6 +1,6 @@
 module github.com/aqyuki/tubu
 
-go 1.22.6
+go 1.23.0
 
 require (
 	github.com/bwmarrin/discordgo v0.28.1
