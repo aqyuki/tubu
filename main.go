@@ -53,7 +53,7 @@ func run(ctx context.Context) exitCode {
 		discord.WithAPITimeout(cfg.APITimeout),
 	)
 	handler := discord.NewHandler(
-		discord.WithContextFunc(BuildContextFunc(ctx)),
+		discord.WithHandlerContextFunc(BuildContextFunc(ctx)),
 		discord.WithReadyHandler(handler.ReadyHandler(md)),
 		discord.WithMessageCreateHandler(handler.NewExpandHandler(channelCache).Expand),
 	)

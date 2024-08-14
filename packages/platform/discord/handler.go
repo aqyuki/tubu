@@ -20,8 +20,8 @@ type Handler struct {
 // HandlerOption is a functional option for Handler.
 type HandlerOption func(*Handler)
 
-// WithContextFunc adds a context function to the Handler.
-func WithContextFunc(f func() context.Context) HandlerOption {
+// WithHandlerContextFunc adds a context function to the Handler.
+func WithHandlerContextFunc(f func() context.Context) HandlerOption {
 	return func(h *Handler) {
 		if f == nil {
 			return
