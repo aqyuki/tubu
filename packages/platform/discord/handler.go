@@ -20,8 +20,8 @@ type Handler struct {
 // HandlerOption is a functional option for Handler.
 type HandlerOption func(*Handler)
 
-// WithContextFunc adds a context function to the Handler.
-func WithContextFunc(f func() context.Context) HandlerOption {
+// WithHandlerContextFunc adds a context function to the Handler.
+func WithHandlerContextFunc(f func() context.Context) HandlerOption {
 	return func(h *Handler) {
 		if f == nil {
 			return
@@ -47,8 +47,9 @@ func WithMessageCreateHandler(handler MessageCreateHandler) HandlerOption {
 // NewHandler creates a new Handler.
 func NewHandler(opts ...HandlerOption) *Handler {
 	h := &Handler{
-		readyHandler: make([]ReadyHandler, 0),
-		contextFunc:  func() context.Context { return context.Background() },
+		readyHandler:         make([]ReadyHandler, 0),
+		messageCreateHandler: make([]MessageCreateHandler, 0),
+		contextFunc:          func() context.Context { return context.Background() },
 	}
 
 	for _, opt := range opts {
@@ -61,8 +62,8 @@ func NewHandler(opts ...HandlerOption) *Handler {
 func (h *Handler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 	var wg sync.WaitGroup
 	ctx := h.contextFunc()
+	wg.Add(len(h.readyHandler))
 	for _, handler := range h.readyHandler {
-		wg.Add(1)
 		go func(h ReadyHandler) {
 			h(ctx, s, r)
 			wg.Done()
@@ -75,8 +76,8 @@ func (h *Handler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 func (h *Handler) HandleMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	var wg sync.WaitGroup
 	ctx := h.contextFunc()
+	wg.Add(len(h.messageCreateHandler))
 	for _, handler := range h.messageCreateHandler {
-		wg.Add(1)
 		go func(h MessageCreateHandler) {
 			h(ctx, s, m)
 			wg.Done()
