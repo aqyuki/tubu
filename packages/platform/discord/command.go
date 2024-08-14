@@ -2,7 +2,6 @@ package discord
 
 import (
 	"context"
-	"iter"
 	"maps"
 	"slices"
 
@@ -64,14 +63,4 @@ func (r *CommandRouter) HandleInteractionCreate(s *discordgo.Session, i *discord
 
 func (r *CommandRouter) Commands() []*discordgo.ApplicationCommand {
 	return slices.Collect(collectCommand(maps.Values(r.commands)))
-}
-
-func collectCommand(commands iter.Seq[Command]) iter.Seq[*discordgo.ApplicationCommand] {
-	return func(yield func(*discordgo.ApplicationCommand) bool) {
-		for command := range commands {
-			if !yield(command.Command()) {
-				return
-			}
-		}
-	}
 }
