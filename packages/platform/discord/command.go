@@ -34,6 +34,11 @@ func WithCommand(command Command) CommandRouterOption {
 
 func WithCommandContextFunc(f func() context.Context) CommandRouterOption {
 	return func(router *CommandRouter) {
+		if f == nil {
+			return
+		} else if f() == nil {
+			return
+		}
 		router.contextFunc = f
 	}
 }
