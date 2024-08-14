@@ -2,6 +2,9 @@ package discord
 
 import (
 	"context"
+	"iter"
+	"maps"
+	"slices"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -60,10 +63,15 @@ func (r *CommandRouter) HandleInteractionCreate(s *discordgo.Session, i *discord
 }
 
 func (r *CommandRouter) Commands() []*discordgo.ApplicationCommand {
-	// TODO: change to use map.Values() when Go 1.23 is released
-	commands := make([]*discordgo.ApplicationCommand, 0, len(r.commands))
-	for _, command := range r.commands {
-		commands = append(commands, command.Command())
+	return slices.Collect(collectCommand(maps.Values(r.commands)))
+}
+
+func collectCommand(commands iter.Seq[Command]) iter.Seq[*discordgo.ApplicationCommand] {
+	return func(yield func(*discordgo.ApplicationCommand) bool) {
+		for command := range commands {
+			if !yield(command.Command()) {
+				return
+			}
+		}
 	}
-	return commands
 }
