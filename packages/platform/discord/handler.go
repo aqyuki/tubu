@@ -47,8 +47,9 @@ func WithMessageCreateHandler(handler MessageCreateHandler) HandlerOption {
 // NewHandler creates a new Handler.
 func NewHandler(opts ...HandlerOption) *Handler {
 	h := &Handler{
-		readyHandler: make([]ReadyHandler, 0),
-		contextFunc:  func() context.Context { return context.Background() },
+		readyHandler:         make([]ReadyHandler, 0),
+		messageCreateHandler: make([]MessageCreateHandler, 0),
+		contextFunc:          func() context.Context { return context.Background() },
 	}
 
 	for _, opt := range opts {
