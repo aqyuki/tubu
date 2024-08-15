@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 	"fmt"
-	"math"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -22,7 +21,8 @@ const (
 
 	diceCommandMinCount = 1
 	diceCommandMinFace  = 2
-	diceCommandMaxFace  = math.MaxInt
+	diceCommandMaxCount = 10
+	diceCommandMaxFace  = 100
 )
 
 type DiceCommand struct{}
@@ -81,6 +81,8 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 
 		if count < diceCommandMinCount {
 			count = diceCommandMinCount
+		} else if count > diceCommandMaxCount {
+			count = diceCommandMaxCount
 		}
 
 		if face < diceCommandMinFace {
