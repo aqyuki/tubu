@@ -55,6 +55,8 @@ func NewCommandRouter(opts ...CommandRouterOption) *CommandRouter {
 }
 
 func (r *CommandRouter) HandleInteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	ctx := r.contextFunc()
+	defer recoveryPanic(ctx, i)
 	// if the interaction is not a command, ignore it
 	if i.Type != discordgo.InteractionApplicationCommand {
 		return
@@ -63,7 +65,7 @@ func (r *CommandRouter) HandleInteractionCreate(s *discordgo.Session, i *discord
 	if !ok {
 		return
 	}
-	command.Handler()(r.contextFunc(), s, i)
+	command.Handler()(ctx, s, i)
 }
 
 func (r *CommandRouter) Commands() []*discordgo.ApplicationCommand {
