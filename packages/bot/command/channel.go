@@ -3,8 +3,6 @@ package command
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"time"
 
 	"github.com/aqyuki/tubu/packages/bot/common"
 	"github.com/aqyuki/tubu/packages/logging"
@@ -16,12 +14,6 @@ var _ discord.Command = (*ChannelCommand)(nil)
 
 const (
 	channelCommandChannelOptionName = "channel"
-
-	// Discord Epochは，Discord APIのSnowflakeで使用される基準日時
-	// 基準時刻は，2015/01/01 00:00:00 UTC
-	// 上位42ビットはタイムスタンプ，次の5ビットはデータセンターID，次の5ビットはワーカーID，最後の12ビットはシーケンス番号
-	// ref: https://discord.com/developers/docs/reference#snowflakes
-	discordEpoch = int64(1420070400000)
 )
 
 type ChannelCommand struct{}
@@ -126,12 +118,9 @@ func (c *ChannelCommand) channelType(ch *discordgo.Channel) *discordgo.MessageEm
 }
 
 func (c *ChannelCommand) createdAt(ch *discordgo.Channel) *discordgo.MessageEmbedField {
-	// IDは，確実にsnowflakeで有るため，簡略化の為にエラーチェックを省略
-	snowflake, _ := strconv.ParseInt(ch.ID, 10, 64)
-	createdAt := time.Unix(0, ((snowflake>>22)+discordEpoch)*int64(time.Millisecond))
 	return &discordgo.MessageEmbedField{
 		Name:   "作成日時",
-		Value:  fmt.Sprintf("<t:%d>", createdAt.Unix()),
+		Value:  fmt.Sprintf("<t:%d>", discord.TimestampFromSnowflake(ch.ID).Unix()),
 		Inline: true,
 	}
 }

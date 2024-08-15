@@ -3,8 +3,6 @@ package command
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"time"
 
 	"github.com/aqyuki/tubu/packages/bot/common"
 	"github.com/aqyuki/tubu/packages/cache"
@@ -164,12 +162,9 @@ func (c *GuildCommand) scale(guild *discordgo.Guild) *discordgo.MessageEmbedFiel
 }
 
 func (c *GuildCommand) createdAt(guild *discordgo.Guild) *discordgo.MessageEmbedField {
-	// IDは，確実にsnowflakeで有るため，簡略化の為にエラーチェックを省略
-	snowflake, _ := strconv.ParseInt(guild.ID, 10, 64)
-	createdAt := time.Unix(0, ((snowflake>>22)+discordEpoch)*int64(time.Millisecond)) // TODO: discordEpochをdiscordパッケージに移動する
 	return &discordgo.MessageEmbedField{
 		Name:   "作成日時",
-		Value:  fmt.Sprintf("<t:%d>", createdAt.Unix()),
+		Value:  fmt.Sprintf("<t:%d>", discord.TimestampFromSnowflake(guild.ID).Unix()),
 		Inline: true,
 	}
 }
