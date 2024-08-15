@@ -49,6 +49,7 @@ func run(ctx context.Context) exitCode {
 	// initialize discord bot
 	md := metadata.GetMetadata()
 	channelCache := cache.NewInMemoryCacheStore[discordgo.Channel](5*time.Minute, 30*time.Minute)
+	guildCache := cache.NewInMemoryCacheStore[discordgo.Guild](5*time.Minute, 30*time.Minute)
 	config := discord.NewConfig(
 		discord.WithAPITimeout(cfg.APITimeout),
 	)
@@ -62,6 +63,7 @@ func run(ctx context.Context) exitCode {
 		discord.WithCommand(command.NewVersionCommand(md)),
 		discord.WithCommand(command.NewDiceCommand()),
 		discord.WithCommand(command.NewChannelCommand()),
+		discord.WithCommand(command.NewGuildCommand(guildCache)),
 	)
 
 	discordBot := discord.NewBot(md, config, handler, router)
