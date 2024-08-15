@@ -88,7 +88,7 @@ func (c *ChannelCommand) Handler() discord.InteractionCreateHandler {
 
 func (c *ChannelCommand) channelName(ch *discordgo.Channel) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
-		Name:   "`チャンネル名`",
+		Name:   "チャンネル名",
 		Value:  fmt.Sprintf("<#%s>", ch.ID),
 		Inline: true,
 	}
@@ -119,8 +119,8 @@ func (c *ChannelCommand) channelType(ch *discordgo.Channel) *discordgo.MessageEm
 		channelType = "Other"
 	}
 	return &discordgo.MessageEmbedField{
-		Name:   "`チャンネルタイプ`",
-		Value:  fmt.Sprintf("`%s`", channelType),
+		Name:   "チャンネルタイプ",
+		Value:  channelType,
 		Inline: true,
 	}
 }
@@ -130,8 +130,8 @@ func (c *ChannelCommand) createdAt(ch *discordgo.Channel) *discordgo.MessageEmbe
 	snowflake, _ := strconv.ParseInt(ch.ID, 10, 64)
 	createdAt := time.Unix(0, ((snowflake>>22)+discordEpoch)*int64(time.Millisecond))
 	return &discordgo.MessageEmbedField{
-		Name:   "`作成日時`",
-		Value:  fmt.Sprintf("`<t:%d>`", createdAt.Unix()),
+		Name:   "作成日時",
+		Value:  fmt.Sprintf("<t:%d>", createdAt.Unix()),
 		Inline: true,
 	}
 }
