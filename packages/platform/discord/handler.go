@@ -65,6 +65,7 @@ func (h *Handler) HandleReady(s *discordgo.Session, r *discordgo.Ready) {
 	wg.Add(len(h.readyHandler))
 	for _, handler := range h.readyHandler {
 		go func(h ReadyHandler) {
+			defer recoveryPanic(ctx, r)
 			h(ctx, s, r)
 			wg.Done()
 		}(handler)
@@ -79,6 +80,7 @@ func (h *Handler) HandleMessageCreate(s *discordgo.Session, m *discordgo.Message
 	wg.Add(len(h.messageCreateHandler))
 	for _, handler := range h.messageCreateHandler {
 		go func(h MessageCreateHandler) {
+			defer recoveryPanic(ctx, m)
 			h(ctx, s, m)
 			wg.Done()
 		}(handler)
