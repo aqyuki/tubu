@@ -5,7 +5,10 @@ tubu は Go で実装された Discord Bot です．
 ## Features
 
 - メッセージリンクの展開機能
+- `channel`コマンド
 - `dice` コマンド
+- `guild`コマンド
+- `version`コマンド
 
 ## Deployment
 
