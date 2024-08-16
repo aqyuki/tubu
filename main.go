@@ -64,6 +64,7 @@ func run(ctx context.Context) exitCode {
 		discord.WithCommand(command.NewDiceCommand()),
 		discord.WithCommand(command.NewChannelCommand()),
 		discord.WithCommand(command.NewGuildCommand(guildCache)),
+		discord.WithCommand(command.NewSendDM()),
 	)
 
 	discordBot := discord.NewBot(md, config, handler, router)
