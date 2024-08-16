@@ -8,15 +8,15 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var _ discord.Command = (*SendDM)(nil)
+var _ discord.Command = (*SendDMCommand)(nil)
 
-type SendDM struct{}
+type SendDMCommand struct{}
 
-func NewSendDM() *SendDM {
-	return &SendDM{}
+func NewSendDMCommand() *SendDMCommand {
+	return &SendDMCommand{}
 }
 
-func (c *SendDM) Command() *discordgo.ApplicationCommand {
+func (c *SendDMCommand) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Type:              discordgo.MessageApplicationCommand,
 		Name:              "Send DM",
@@ -24,7 +24,7 @@ func (c *SendDM) Command() *discordgo.ApplicationCommand {
 	}
 }
 
-func (c *SendDM) Handler() discord.InteractionCreateHandler {
+func (c *SendDMCommand) Handler() discord.InteractionCreateHandler {
 	return func(ctx context.Context, s *discordgo.Session, ic *discordgo.InteractionCreate) {
 		logger := logging.FromContext(ctx)
 		logger.Debug("send_dm command is called")
