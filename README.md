@@ -9,6 +9,7 @@ tubu は Go で実装された Discord Bot です．
 - `dice` コマンド
 - `guild`コマンド
 - `version`コマンド
+- メッセージのピン留め機能
 
 ## Deployment
 
