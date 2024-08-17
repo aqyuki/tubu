@@ -31,16 +31,16 @@ func WithHandlerContextFunc(f func() context.Context) HandlerOption {
 }
 
 // WithReadyHandler adds a ReadyHandler to the Handler.
-func WithReadyHandler(handler ReadyHandler) HandlerOption {
+func WithReadyHandler(handler ...ReadyHandler) HandlerOption {
 	return func(h *Handler) {
-		h.readyHandler = append(h.readyHandler, handler)
+		h.readyHandler = append(h.readyHandler, handler...)
 	}
 }
 
 // WithMessageCreateHandler adds a MessageCreateHandler to the Handler.
-func WithMessageCreateHandler(handler MessageCreateHandler) HandlerOption {
+func WithMessageCreateHandler(handler ...MessageCreateHandler) HandlerOption {
 	return func(h *Handler) {
-		h.messageCreateHandler = append(h.messageCreateHandler, handler)
+		h.messageCreateHandler = append(h.messageCreateHandler, handler...)
 	}
 }
 

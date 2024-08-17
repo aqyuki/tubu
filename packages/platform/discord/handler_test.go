@@ -46,6 +46,14 @@ func TestNewHandler(t *testing.T) {
 			},
 		},
 		{
+			name: "should be return handler with message create handler returned multiple",
+			opts: []HandlerOption{WithMessageCreateHandler(func(context.Context, *discordgo.Session, *discordgo.MessageCreate) {}, func(context.Context, *discordgo.Session, *discordgo.MessageCreate) {})},
+			except: &except{
+				readyHandlerCount:         0,
+				messageCreateHandlerCount: 2,
+			},
+		},
+		{
 			name: "should be return handler with context function",
 			opts: []HandlerOption{WithHandlerContextFunc(func() context.Context { return context.Background() })},
 			except: &except{
