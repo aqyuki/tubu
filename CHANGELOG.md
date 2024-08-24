@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0](https://github.com/aqyuki/tubu/compare/v1.0.1...v1.1.0) (2024-08-17)
+
+
+### Features
+
+* **bot:** change to allow recovery from the panic occurred ([#41](https://github.com/aqyuki/tubu/issues/41)) ([1a62701](https://github.com/aqyuki/tubu/commit/1a62701b2d73fcc18d37c62ede1b6046703c4be5))
+* **command:** add `channel` command ([#37](https://github.com/aqyuki/tubu/issues/37)) ([263bfc3](https://github.com/aqyuki/tubu/commit/263bfc308c5ca2dd22035aa530814408e5b573df))
+* **command:** add `guild` command ([#46](https://github.com/aqyuki/tubu/issues/46)) ([5dd8a3b](https://github.com/aqyuki/tubu/commit/5dd8a3be4488fad2cdb136130908f4ec4518fd32))
+* **command:** add SendDM command ([#50](https://github.com/aqyuki/tubu/issues/50)) ([b92ff09](https://github.com/aqyuki/tubu/commit/b92ff09072cbc27600f4fe4aac5597fa5c17deb1))
+* **command:** change maximum number of dice and maximum number of faces ([#48](https://github.com/aqyuki/tubu/issues/48)) ([46e0e4d](https://github.com/aqyuki/tubu/commit/46e0e4dfa25db21e71394b3bd1605fcfa0b98474))
+* **internal:** change to allow register command multiple ([#53](https://github.com/aqyuki/tubu/issues/53)) ([90b35f6](https://github.com/aqyuki/tubu/commit/90b35f6f735d34ddbc4d6b7dc12d33747405da3a))
+
+
+### Bug Fixes
+
+* **docker:** fix the style of the embedded version ([#52](https://github.com/aqyuki/tubu/issues/52)) ([289767e](https://github.com/aqyuki/tubu/commit/289767ebf61f4f2fcb9d5e1a7d41853491df6b27))
+
 ## [1.0.1](https://github.com/aqyuki/tubu/compare/v1.0.0...v1.0.1) (2024-08-13)
 
 
