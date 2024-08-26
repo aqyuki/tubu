@@ -1,11 +1,17 @@
 package cache
 
 import (
+	"context"
 	"time"
 
 	"github.com/patrickmn/go-cache"
 	"github.com/samber/lo"
 )
+
+type CacheStore[T any] interface {
+	Set(ctx context.Context, key, value string) error
+	Get(ctx context.Context, key string) (*T, error)
+}
 
 type InMemoryCacheStore[T any] struct {
 	cache             *cache.Cache
