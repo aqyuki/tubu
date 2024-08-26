@@ -5,18 +5,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/aqyuki/tubu/internal/config"
+	"github.com/aqyuki/tubu/internal/setup"
 	"github.com/aqyuki/tubu/packages/bot/command"
 	"github.com/aqyuki/tubu/packages/bot/handler"
-	"github.com/aqyuki/tubu/packages/cache"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/bwmarrin/discordgo"
 	"github.com/caarlos0/env/v11"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -47,22 +45,16 @@ func run(ctx context.Context) exitCode {
 	}
 	logger.Infow("loaded application config", zap.Any("config", cfg))
 
-	// initialize cache store
-	var channelCache cache.CacheStore[discordgo.Channel]
-	var guildCache cache.CacheStore[discordgo.Guild]
-
-	// initialize cache store
-	if cfg.IsRedisEnabled() {
-		redisClient := redis.NewClient(buildRedisOption(&cfg))
-		channelCache = cache.NewRedisCacheStore[discordgo.Channel](redisClient, 30*time.Minute)
-		guildCache = cache.NewRedisCacheStore[discordgo.Guild](redisClient, 30*time.Minute)
-	} else {
-		channelCache = cache.NewInMemoryCacheStore[discordgo.Channel](5*time.Minute, 30*time.Minute)
-		guildCache = cache.NewInMemoryCacheStore[discordgo.Guild](5*time.Minute, 30*time.Minute)
+	redisConfig, err := setup.ParseRedisConfig()
+	if err != nil {
+		logger.Warnf("failed to parse redis config: %v", err)
 	}
 
 	// initialize discord bot
 	md := metadata.GetMetadata()
+	channelCache := setup.SetupCacheStore[discordgo.Channel](redisConfig)
+	guildCache := setup.SetupCacheStore[discordgo.Guild](redisConfig)
+
 	config := discord.NewConfig(
 		discord.WithAPITimeout(cfg.APITimeout),
 	)
@@ -98,15 +90,6 @@ func run(ctx context.Context) exitCode {
 func BuildContextFunc(ctx context.Context) func() context.Context {
 	return func() context.Context {
 		return ctx
-	}
-}
-
-func buildRedisOption(cfg *config.Config) *redis.Options {
-	return &redis.Options{
-		Addr:     cfg.RedisAddr,
-		Password: cfg.RedisPassword,
-		DB:       cfg.RedisDB,
-		PoolSize: cfg.RedisPoolSize,
 	}
 }
 
