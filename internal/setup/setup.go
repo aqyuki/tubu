@@ -10,17 +10,18 @@ import (
 )
 
 const (
+	environmentPrefix = "TUBU_"
 	defaultExpiration = 30 * time.Minute
 	defaultCleanup    = 30 * time.Minute
 )
 
 type Config struct {
-	Token      string        `env:"TUBU_DISCORD_TOKEN,required"`
-	APITimeout time.Duration `env:"TUBU_API_TIMEOUT" envDefault:"10s"`
+	Token      string        `env:"DISCORD_TOKEN,required"`
+	APITimeout time.Duration `env:"API_TIMEOUT" envDefault:"10s"`
 }
 
 func ParseBotConfig() (*Config, error) {
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAsWithOptions[Config](env.Options{Prefix: environmentPrefix})
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse bot config: %w", err)
 	}
@@ -28,7 +29,7 @@ func ParseBotConfig() (*Config, error) {
 }
 
 func ParseRedisConfig() (*redis.RedisConfig, error) {
-	cfg, err := env.ParseAs[redis.RedisConfig]()
+	cfg, err := env.ParseAsWithOptions[redis.RedisConfig](env.Options{Prefix: environmentPrefix})
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse redis config: %w", err)
 	}

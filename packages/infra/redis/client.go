@@ -7,10 +7,10 @@ import (
 )
 
 type RedisConfig struct {
-	Address  string `env:"TUBU_REDIS_ADDRESS"`
-	Password string `env:"TUBU_REDIS_PASSWORD"`
-	DB       int    `env:"TUBU_REDIS_DB" envDefault:"0"`
-	PoolSize int    `env:"TUBU_REDIS_POOL_SIZE" envDefault:"10"`
+	Address  string `env:"REDIS_ADDRESS"`
+	Password string `env:"REDIS_PASSWORD"`
+	DB       int    `env:"REDIS_DB" envDefault:"0"`
+	PoolSize int    `env:"REDIS_POOL_SIZE" envDefault:"10"`
 }
 
 func (c *RedisConfig) IsEnabled() bool {
