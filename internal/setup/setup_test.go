@@ -101,4 +101,14 @@ func TestParseRedisConfig(t *testing.T) {
 			assert.Equal(t, except, config, "expected %v but received %v", except, config)
 		})
 	})
+
+	t.Run("異常系", func(t *testing.T) {
+		t.Run("型が不一致の場合", func(t *testing.T) {
+			t.Setenv("TUBU_REDIS_DB", "invalid")
+
+			config, err := ParseRedisConfig()
+			assert.Error(t, err, "expected error but received nil")
+			assert.Nil(t, config, "expected nil but received %v", config)
+		})
+	})
 }
