@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -31,9 +32,9 @@ func TestInMemoryCacheStore(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemoryCacheStore[sample](expiration, cleanup)
-		store.Set("key", sample{})
-		v, ok := store.Get("key")
-		assert.True(t, ok)
+		store.Set(context.Background(), "key", sample{})
+		v, err := store.Get(context.Background(), "key")
+		assert.NoError(t, err)
 		assert.NotNil(t, v)
 	})
 
@@ -41,9 +42,9 @@ func TestInMemoryCacheStore(t *testing.T) {
 		t.Parallel()
 
 		store := NewInMemoryCacheStore[sample](expiration, cleanup)
-		store.Set("key", sample{})
-		v, ok := store.Get("key2")
-		assert.False(t, ok)
+		store.Set(context.Background(), "key", sample{})
+		v, err := store.Get(context.Background(), "key2")
+		assert.Error(t, err)
 		assert.Nil(t, v)
 	})
 }
