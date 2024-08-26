@@ -17,10 +17,10 @@ import (
 
 type ExpandHandler struct {
 	rgx   *regexp.Regexp
-	cache *cache.InMemoryCacheStore[discordgo.Channel]
+	cache cache.CacheStore[discordgo.Channel]
 }
 
-func NewExpandHandler(cache *cache.InMemoryCacheStore[discordgo.Channel]) *ExpandHandler {
+func NewExpandHandler(cache cache.CacheStore[discordgo.Channel]) *ExpandHandler {
 	return &ExpandHandler{
 		rgx:   regexp.MustCompile(`https://(?:ptb\.|canary\.)?discord(app)?\.com/channels/(\d+)/(\d+)/(\d+)`),
 		cache: cache,
@@ -52,14 +52,16 @@ func (h *ExpandHandler) Expand(ctx context.Context, s *discordgo.Session, m *dis
 		return
 	}
 
-	channel, ok := h.cache.Get(ids.channel)
-	if !ok {
+	channel, err := h.cache.Get(ctx, ids.channel)
+	if err != nil {
 		ch, err := s.Channel(ids.channel)
 		if err != nil {
 			logger.Error("failed to get the channel")
 			return
 		}
-		h.cache.Set(ids.channel, lo.FromPtr(ch))
+		if err := h.cache.Set(ctx, ids.channel, lo.FromPtr(ch)); err != nil {
+			logger.Errorf("failed to set the channel information to the cache: %v", err)
+		}
 		channel = ch
 	}
 	if channel.NSFW {
