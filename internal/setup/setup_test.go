@@ -112,3 +112,34 @@ func TestParseRedisConfig(t *testing.T) {
 		})
 	})
 }
+
+func TestSetupCacheStore(t *testing.T) {
+	t.Parallel()
+	t.Run("Redisを使用する場合", func(t *testing.T) {
+		t.Parallel()
+
+		config := &redis.RedisConfig{
+			Address:  "localhost:6379",
+			Password: "password",
+			DB:       1,
+			PoolSize: 20,
+		}
+		store := SetupCacheStore[string](config)
+		assert.NotNil(t, store, "expected not nil but received nil")
+	})
+
+	t.Run("InMemoryを使用する場合", func(t *testing.T) {
+		t.Parallel()
+
+		config := &redis.RedisConfig{}
+		store := SetupCacheStore[string](config)
+		assert.NotNil(t, store, "expected not nil but received nil")
+	})
+
+	t.Run("Redisの設定がnilの場合", func(t *testing.T) {
+		t.Parallel()
+
+		store := SetupCacheStore[string](nil)
+		assert.NotNil(t, store, "expected not nil but received nil")
+	})
+}
