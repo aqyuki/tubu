@@ -7,6 +7,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewChannelCommand(t *testing.T) {
+	t.Parallel()
+	assert.NotNil(t, NewChannelCommand())
+}
+
+func TestChannelCommand_Command(t *testing.T) {
+	t.Parallel()
+	expected := &discordgo.ApplicationCommand{
+		Name:        "channel",
+		Description: "チャンネルの情報を表示します.",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionChannel,
+				Name:        "channel",
+				Description: "情報を表示するチャンネルを指定します.",
+				Required:    true,
+			},
+		},
+	}
+	assert.Equal(t, expected, (&ChannelCommand{}).Command())
+}
+
 func Test_channelName(t *testing.T) {
 	t.Parallel()
 	ch := &discordgo.Channel{
