@@ -11,3 +11,7 @@ type Config struct {
 	RedisDB       int           `env:"TUBU_REDIS_DB" envDefault:"0"`
 	RedisPoolSize int           `env:"TUBU_REDIS_POOL_SIZE" envDefault:"10"`
 }
+
+func (c *Config) IsRedisEnabled() bool {
+	return c.RedisAddr != "" && c.RedisPassword != ""
+}
