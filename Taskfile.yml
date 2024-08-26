@@ -11,7 +11,7 @@ vars:
 
 tasks:
   build:
-    desc: "Build the bot"
+    desc: "Botをビルドします．"
     cmds:
       - |
         go build -ldflags="-s -w \
@@ -19,3 +19,20 @@ tasks:
         -X '{{.METADATA_PATH}}.BuildDate={{.BUILD_DATE}}' \
         -X '{{.METADATA_PATH}}.CommitHash={{.COMMIT_HASH}}'" \
         -o bin/bot main.go
+  start:
+    desc: "Botをビルドし，起動します."
+    cmds:
+      - task: build
+      - ./bin/bot
+  test:
+    desc: "テストを実行します．"
+    cmds:
+      - go test -v -shuffle=on -short ./...
+  full-test:
+    desc: "全てのテストを実行します．"
+    cmds:
+      - go test -v -shuffle=on ./...
+  coverage:
+    desc: "カバレッジを測定します．"
+    cmds:
+      - go test  -v -shuffle=on  -coverprofile=coverage.out ./...
