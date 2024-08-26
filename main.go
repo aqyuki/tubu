@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/aqyuki/tubu/internal/config"
 	"github.com/aqyuki/tubu/internal/setup"
 	"github.com/aqyuki/tubu/packages/bot/command"
 	"github.com/aqyuki/tubu/packages/bot/handler"
@@ -14,8 +13,6 @@ import (
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/bwmarrin/discordgo"
-	"github.com/caarlos0/env/v11"
-	"go.uber.org/zap"
 )
 
 type exitCode int
@@ -36,19 +33,18 @@ func run(ctx context.Context) exitCode {
 	defer done()
 	logger := logging.FromContext(ctx)
 
-	// load application config
-	logger.Infof("try to load application config")
-	cfg, err := env.ParseAs[config.Config]()
+	// load configurations
+	cfg, err := setup.ParseBotConfig()
 	if err != nil {
-		logger.Errorf("tried to load application config but failed with error: %v", err)
+		logger.Errorf("failed to parse bot config: %v", err)
 		return ExitFailure
 	}
-	logger.Infow("loaded application config", zap.Any("config", cfg))
 
 	redisConfig, err := setup.ParseRedisConfig()
 	if err != nil {
 		logger.Warnf("failed to parse redis config: %v", err)
 	}
+	logger.Info("loaded bot configurations successfully")
 
 	// initialize discord bot
 	md := metadata.GetMetadata()
