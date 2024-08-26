@@ -54,6 +54,13 @@ type RedisCacheStore[T any] struct {
 	client     *redis.Client
 }
 
+func NewRedisCacheStore[T any](client *redis.Client, exp time.Duration) *RedisCacheStore[T] {
+	return &RedisCacheStore[T]{
+		expiration: exp,
+		client:     client,
+	}
+}
+
 func (s *RedisCacheStore[T]) Set(ctx context.Context, key string, value T) error {
 	return s.client.Set(ctx, key, value, s.expiration).Err()
 }
