@@ -15,10 +15,10 @@ import (
 var _ discord.Command = (*GuildCommand)(nil)
 
 type GuildCommand struct {
-	cache *cache.InMemoryCacheStore[discordgo.Guild]
+	cache cache.CacheStore[discordgo.Guild]
 }
 
-func NewGuildCommand(cache *cache.InMemoryCacheStore[discordgo.Guild]) *GuildCommand {
+func NewGuildCommand(cache cache.CacheStore[discordgo.Guild]) *GuildCommand {
 	return &GuildCommand{
 		cache: cache,
 	}
@@ -36,14 +36,16 @@ func (c *GuildCommand) Handler() discord.InteractionCreateHandler {
 		logger := logging.FromContext(ctx)
 		logger.Debug("guild command is called")
 
-		guild, ok := c.cache.Get(ic.GuildID)
-		if !ok {
+		guild, err := c.cache.Get(ctx, ic.GuildID)
+		if err != nil {
 			g, err := s.Guild(ic.GuildID)
 			if err != nil {
 				logger.Error("Failed to get guild", err)
 				return
 			}
-			c.cache.Set(ic.GuildID, lo.FromPtr(g))
+			if err := c.cache.Set(ctx, ic.GuildID, lo.FromPtr(g)); err != nil {
+				logger.Errorf("failed to set the guild information to the cache: %v", err)
+			}
 			guild = g
 		}
 
