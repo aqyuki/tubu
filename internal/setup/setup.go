@@ -14,6 +14,19 @@ const (
 	defaultCleanup    = 30 * time.Minute
 )
 
+type Config struct {
+	Token      string        `env:"TUBU_DISCORD_TOKEN,required"`
+	APITimeout time.Duration `env:"TUBU_API_TIMEOUT" envDefault:"10s"`
+}
+
+func ParseBotConfig() (*Config, error) {
+	cfg, err := env.ParseAs[Config]()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse bot config: %w", err)
+	}
+	return &cfg, nil
+}
+
 func ParseRedisConfig() (*redis.RedisConfig, error) {
 	cfg, err := env.ParseAs[redis.RedisConfig]()
 	if err != nil {
