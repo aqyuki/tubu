@@ -89,12 +89,6 @@ func init() {
 	if err := viper.BindPFlag("timeout", rootCmd.PersistentFlags().Lookup("timeout")); err != nil {
 		panic(err)
 	}
-	if err := viper.BindPFlag("redis-enabled", rootCmd.PersistentFlags().Lookup("redis-enabled")); err != nil {
-		panic(err)
-	}
-	if err := viper.BindPFlag("redis-addr", rootCmd.PersistentFlags().Lookup("redis-addr")); err != nil {
-		panic(err)
-	}
 
 	viper.SetEnvPrefix("tubu")
 	viper.AutomaticEnv()

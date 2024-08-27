@@ -30,15 +30,15 @@ Docker Compose が導入されていることを確認してください．
        restart: unless-stopped
    ```
 
-2. `.env`を同一のフォルダに作成します．
-
-   | 環境変数名             | 概要                                            | 既定値 | 必須  |
-   | :--------------------- | :---------------------------------------------- | :----: | :---: |
-   | `TUBU_DISCORD_TOKEN`   | Discord Bot の API トークンを指定してください． |  ---   | **◯** |
-   | `TUBU_API_TIMEOUT`     | API のタイムアウト時間を指定してください．      |  `5s`  |       |
-   | `TUBU_REDIS_ADDRESS`   | Redis のホスト名を指定してください．            |  ---   |       |
-   | `TUBU_REDIS_PASSWORD`  | Redis のパスワードを指定してください．          |  ---   |       |
-   | `TUBU_REDIS_DB`        | Redis の DB を指定してください．                |  `0`   |       |
-   | `TUBU_REDIS_POOL_SIZE` | Redis の Pool 数を指定してください．            |  `10`  |       |
+2. `.env`を同一のフォルダに作成します．設定できるオプションについては[Options](#options)を確認してください．
 
 3. `docker compose up`で起動できます．
+
+## Options
+
+**tubu**の設定は，環境変数もしくは起動オプションから変更できます．
+
+| 設定名            | 概要                                          | 環境変数名           | フラグ名  | 既定値 | 必須  |
+| :---------------- | :-------------------------------------------- | :------------------- | :-------- | :----: | :---: |
+| **DISCORD_TOKEN** | Discord Bot の APi トークンを指定してください | `TUBU_DISCORD_TOKEN` | `token`   |  ---   | **◯** |
+| **API_TIMEOUT**   | API のタイムアウトを指定してください          | `TUBU_TIMEOUT`       | `timeout` | `10s`  |       |
