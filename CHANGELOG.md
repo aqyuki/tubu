@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0](https://github.com/aqyuki/tubu/compare/v1.1.0...v1.2.0) (2024-08-27)
+
+
+### Features
+
+* **cache:** キャッシュにRedisを使用できるように変更 ([#56](https://github.com/aqyuki/tubu/issues/56)) ([110096c](https://github.com/aqyuki/tubu/commit/110096c91f1cd7ac347f077160ad0fd212c8a536))
+* **cmd:** 設定を環境変数以外からでも読み込めるように変更 ([#64](https://github.com/aqyuki/tubu/issues/64)) ([4fb1c19](https://github.com/aqyuki/tubu/commit/4fb1c19d0dbcd3b26d7e6742219363391be4b9bc))
+* **redis:** Redisのサポートを削除 ([#65](https://github.com/aqyuki/tubu/issues/65)) ([5b52c51](https://github.com/aqyuki/tubu/commit/5b52c5111dc050bb46585082271687555b7cc744))
+* **setup:** プログラムの初期化処理を統一 ([#58](https://github.com/aqyuki/tubu/issues/58)) ([2be94e6](https://github.com/aqyuki/tubu/commit/2be94e69d734f4be07bca0c40b6bd309ec7ed774))
+
 ## [1.1.0](https://github.com/aqyuki/tubu/compare/v1.0.1...v1.1.0) (2024-08-17)
 
 
