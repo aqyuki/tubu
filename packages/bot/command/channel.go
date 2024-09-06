@@ -8,6 +8,7 @@ import (
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/bwmarrin/discordgo"
+	"go.uber.org/zap"
 )
 
 var _ discord.Command = (*ChannelCommand)(nil)
@@ -72,7 +73,7 @@ func (c *ChannelCommand) Handler() discord.InteractionCreateHandler {
 				Embeds: []*discordgo.MessageEmbed{embed},
 			},
 		}); err != nil {
-			logger.Error("failed to respond", "error", err)
+			logger.Error("failed to respond", zap.Error(err))
 			return
 		}
 	}

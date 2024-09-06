@@ -9,6 +9,7 @@ import (
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/bwmarrin/discordgo"
+	"go.uber.org/zap"
 )
 
 var _ discord.Command = (*VersionCommand)(nil)
@@ -44,7 +45,7 @@ func (c *VersionCommand) Handler() discord.InteractionCreateHandler {
 				Embeds: []*discordgo.MessageEmbed{embed},
 			},
 		}); err != nil {
-			logger.Error("failed to respond to the interaction", "error", err)
+			logger.Error("failed to respond to the interaction", zap.Error(err))
 		}
 	}
 }

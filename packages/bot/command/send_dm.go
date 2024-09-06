@@ -6,6 +6,7 @@ import (
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/bwmarrin/discordgo"
+	"go.uber.org/zap"
 )
 
 var _ discord.Command = (*SendDMCommand)(nil)
@@ -31,7 +32,7 @@ func (c *SendDMCommand) Handler() discord.InteractionCreateHandler {
 
 		message, ok := ic.ApplicationCommandData().Resolved.Messages[ic.ApplicationCommandData().TargetID]
 		if !ok {
-			logger.Errorf("failed to get message from resolved data")
+			logger.Error("failed to get message from resolved data")
 			return
 		}
 
@@ -42,14 +43,14 @@ func (c *SendDMCommand) Handler() discord.InteractionCreateHandler {
 
 		dm, err := s.UserChannelCreate(ic.Member.User.ID)
 		if err != nil {
-			logger.Error("failed to create DM channel", err)
+			logger.Error("failed to create DM channel", zap.Error(err))
 			return
 		}
 
 		if _, err := s.ChannelMessageSendComplex(dm.ID, &discordgo.MessageSend{
 			Content: message.Content,
 		}); err != nil {
-			logger.Error("failed to send DM message", err)
+			logger.Error("failed to send DM message", zap.Error(err))
 			return
 		}
 
@@ -59,7 +60,7 @@ func (c *SendDMCommand) Handler() discord.InteractionCreateHandler {
 				Content: "DMにピン留めしておいたよ！",
 			},
 		}); err != nil {
-			logger.Error("failed to respond to interaction", err)
+			logger.Error("failed to respond to interaction", zap.Error(err))
 			return
 		}
 	}

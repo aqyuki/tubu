@@ -61,7 +61,7 @@ var (
 
 			bot := discord.NewBot(md, config, handler, router)
 			if err := bot.Start(conf.Token); err != nil {
-				logger.Errorw("failed to start bot", zap.Error(err))
+				logger.Error("failed to start bot", zap.Error(err))
 				return err
 			}
 
@@ -69,7 +69,7 @@ var (
 			logger.Info("received signal to stop bot")
 
 			if err := bot.Shutdown(); err != nil {
-				logger.Errorw("failed to stop bot", zap.Error(err))
+				logger.Error("failed to stop bot", zap.Error(err))
 				return err
 			}
 			return nil

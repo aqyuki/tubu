@@ -14,10 +14,10 @@ import (
 func ReadyHandler(md *metadata.Metadata) discord.ReadyHandler {
 	return func(ctx context.Context, s *discordgo.Session, r *discordgo.Ready) {
 		logger := logging.FromContext(ctx)
-		logger.Infow(fmt.Sprintf("Bot is ready (username : %s)", r.User.Username), zap.Any("metadata", md))
+		logger.Info(fmt.Sprintf("Bot is ready (username : %s)", r.User.Username), zap.Any("metadata", md))
 		// Set the playing status.
 		if err := s.UpdateCustomStatus(fmt.Sprintf("%sをプレイ中", md.Version)); err != nil {
-			logger.Errorf("failed to set the playing status because of %v", err)
+			logger.Error("failed to set the playing status", zap.Error(err))
 		}
 	}
 }

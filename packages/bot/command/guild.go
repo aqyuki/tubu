@@ -10,6 +10,7 @@ import (
 	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/bwmarrin/discordgo"
 	"github.com/samber/lo"
+	"go.uber.org/zap"
 )
 
 var _ discord.Command = (*GuildCommand)(nil)
@@ -40,11 +41,11 @@ func (c *GuildCommand) Handler() discord.InteractionCreateHandler {
 		if err != nil {
 			g, err := s.Guild(ic.GuildID)
 			if err != nil {
-				logger.Error("Failed to get guild", err)
+				logger.Error("Failed to get guild", zap.Error(err))
 				return
 			}
 			if err := c.cache.Set(ctx, ic.GuildID, lo.FromPtr(g)); err != nil {
-				logger.Errorf("failed to set the guild information to the cache: %v", err)
+				logger.Error("failed to set the guild information to the cache", zap.Error(err))
 			}
 			guild = g
 		}
@@ -72,7 +73,7 @@ func (c *GuildCommand) Handler() discord.InteractionCreateHandler {
 				Embeds: []*discordgo.MessageEmbed{embed},
 			},
 		}); err != nil {
-			logger.Errorf("failed to respond: %v", err)
+			logger.Error("failed to respond", zap.Error(err))
 			return
 		}
 	}
