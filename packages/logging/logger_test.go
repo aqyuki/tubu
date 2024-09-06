@@ -2,104 +2,218 @@ package logging
 
 import (
 	"context"
-	"reflect"
 	"testing"
+	"time"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 func TestNewLoggerFromEnv(t *testing.T) {
-	t.Parallel()
+	t.Run("LOG_MODEがdevelopの場合", func(t *testing.T) {
+		t.Setenv("LOG_MODE", "develop")
+		actual := NewLoggerFromEnv()
 
-	result := NewLoggerFromEnv()
-	if result == nil {
-		t.Error("expect not nil, but received nil")
-	}
+		assert.NotNil(t, actual)
+	})
+
+	t.Run("LOG_MODEがdevelopでない場合", func(t *testing.T) {
+		t.Setenv("LOG_MODE", "production")
+		actual := NewLoggerFromEnv()
+
+		assert.NotNil(t, actual)
+	})
 }
 
 func TestNewLogger(t *testing.T) {
 	t.Parallel()
+	t.Run("developがtrueの場合", func(t *testing.T) {
+		t.Parallel()
+		actual := NewLogger(true, "debug")
 
-	result1 := NewLogger(true, "debug")
-	if result1 == nil {
-		t.Errorf("expect not nil, but received nil")
-	}
+		assert.NotNil(t, actual)
+	})
 
-	result2 := NewLogger(false, "debug")
-	if result2 == nil {
-		t.Errorf("expect not nil, but received nil")
-	}
+	t.Run("developがfalseの場合", func(t *testing.T) {
+		t.Parallel()
+		actual := NewLogger(false, "info")
+
+		assert.NotNil(t, actual)
+	})
 }
 
 func TestDefaultLogger(t *testing.T) {
 	t.Parallel()
 
-	result1 := DefaultLogger()
-	if result1 == nil {
-		t.Errorf("expect not nil, but received nil")
-	}
+	actual1 := DefaultLogger()
+	actual2 := DefaultLogger()
 
-	result2 := DefaultLogger()
-	if result2 == nil {
-		t.Errorf("expect not nil, but received nil")
-	}
-
-	if !reflect.DeepEqual(result1, result2) {
-		t.Errorf("expect same logger, but received different logger")
-	}
+	assert.NotNil(t, actual1)
+	assert.NotNil(t, actual2)
+	assert.Equal(t, actual1, actual2)
 }
 
-func TestStringToZapLevel(t *testing.T) {
+func TestWithLogger(t *testing.T) {
+	t.Parallel()
+	logger := zap.NewNop()
+	ctx := WithLogger(context.Background(), logger)
+
+	assert.NotNil(t, ctx)
+}
+
+func TestFromContext(t *testing.T) {
 	t.Parallel()
 
-	cases := []struct {
-		input string
+	t.Run("loggerがcontextに設定されている場合", func(t *testing.T) {
+		t.Parallel()
+		logger := zap.NewNop()
+		ctx := WithLogger(context.Background(), logger)
+		actual := FromContext(ctx)
+
+		assert.NotNil(t, actual)
+	})
+
+	t.Run("loggerがcontextに設定されていない場合", func(t *testing.T) {
+		t.Parallel()
+		ctx := context.Background()
+		actual := FromContext(ctx)
+
+		assert.NotNil(t, actual)
+	})
+}
+
+func Test_levelToZapLevel(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		level string
 		want  zapcore.Level
 	}{
-		{input: "debug", want: zap.DebugLevel},
-		{input: "info", want: zap.InfoLevel},
-		{input: "warn", want: zap.WarnLevel},
-		{input: "error", want: zap.ErrorLevel},
-		{input: "dpanic", want: zap.DPanicLevel},
-		{input: "panic", want: zap.PanicLevel},
-		{input: "fatal", want: zap.FatalLevel},
-		{input: "unknown", want: zap.InfoLevel},
+		{
+			name:  "debug",
+			level: "debug",
+			want:  zapcore.DebugLevel,
+		},
+		{
+			name:  "info",
+			level: "info",
+			want:  zapcore.InfoLevel,
+		},
+		{
+			name:  "warning",
+			level: "warning",
+			want:  zapcore.WarnLevel,
+		},
+		{
+			name:  "error",
+			level: "error",
+			want:  zapcore.ErrorLevel,
+		},
+		{
+			name:  "critical",
+			level: "critical",
+			want:  zapcore.DPanicLevel,
+		},
+		{
+			name:  "alert",
+			level: "alert",
+			want:  zapcore.PanicLevel,
+		},
+		{
+			name:  "emergency",
+			level: "emergency",
+			want:  zapcore.FatalLevel,
+		},
+		{
+			name:  "unknown",
+			level: "unknown",
+			want:  zapcore.InfoLevel,
+		},
 	}
 
-	for _, cs := range cases {
-		cs := cs
-		t.Run(cs.input, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			actual := levelToZapLevel(tt.level)
 
-			result := stringToZapLevel(cs.input)
-			if diff := cmp.Diff(cs.want, result); diff != "" {
-				t.Errorf("(-want, +got)\n%s", diff)
-			}
+			assert.Equal(t, tt.want, actual)
 		})
 	}
 }
 
-func TestContext(t *testing.T) {
+func Test_levelEncoder(t *testing.T) {
 	t.Parallel()
 
-	logger := FromContext(context.Background())
-	if logger == nil {
-		t.Fatal("expect logger, but received nil")
+	tests := []struct {
+		name  string
+		level zapcore.Level
+		want  string
+	}{
+		{
+			name:  "debug",
+			level: zapcore.DebugLevel,
+			want:  "DEBUG",
+		},
+		{
+			name:  "info",
+			level: zapcore.InfoLevel,
+			want:  "INFO",
+		},
+		{
+			name:  "warning",
+			level: zapcore.WarnLevel,
+			want:  "WARNING",
+		},
+		{
+			name:  "error",
+			level: zapcore.ErrorLevel,
+			want:  "ERROR",
+		},
+		{
+			name:  "critical",
+			level: zapcore.DPanicLevel,
+			want:  "CRITICAL",
+		},
+		{
+			name:  "alert",
+			level: zapcore.PanicLevel,
+			want:  "ALERT",
+		},
+		{
+			name:  "emergency",
+			level: zapcore.FatalLevel,
+			want:  "EMERGENCY",
+		},
 	}
 
-	ctx := WithLogger(context.Background(), logger)
-	if ctx == nil {
-		t.Fatal("expect context, but received nil")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mem := zapcore.NewMapObjectEncoder()
+			err := mem.AddArray("k", zapcore.ArrayMarshalerFunc(func(arr zapcore.ArrayEncoder) error {
+				levelEncoder()(tt.level, arr)
+				return nil
+			}))
+			assert.NoError(t, err)
+			arr := mem.Fields["k"].([]any)
+			assert.Len(t, arr, 1)
+			assert.Equal(t, tt.want, arr[0])
+		})
 	}
+}
 
-	logger2 := FromContext(ctx)
-	if logger2 == nil {
-		t.Fatal("expect logger, but received nil")
-	}
-
-	if !reflect.DeepEqual(logger, logger2) {
-		t.Error("expect same logger, but received different logger")
-	}
+func Test_timeEncoder(t *testing.T) {
+	t.Parallel()
+	moment := time.Unix(100, 50005000).UTC()
+	mem := zapcore.NewMapObjectEncoder()
+	err := mem.AddArray("k", zapcore.ArrayMarshalerFunc(func(arr zapcore.ArrayEncoder) error {
+		timeEncoder()(moment, arr)
+		return nil
+	}))
+	assert.NoError(t, err)
+	arr := mem.Fields["k"].([]any)
+	assert.Len(t, arr, 1)
+	assert.Equal(t, "1970-01-01T00:01:40.050005Z", arr[0])
 }

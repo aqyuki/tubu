@@ -31,13 +31,13 @@ func NewExpandHandler(cache cache.CacheStore[discordgo.Channel]) *ExpandHandler 
 func (h *ExpandHandler) Expand(ctx context.Context, s *discordgo.Session, m *discordgo.MessageCreate) {
 	logger := logging.FromContext(ctx)
 	if m.Author.Bot {
-		logger.Infof("skip the processing because the message was created by the bot.")
+		logger.Info("skip the processing because the message was created by the bot.")
 		return
 	}
 
 	links := h.extractMessageLinks(m.Content)
 	if len(links) == 0 {
-		logger.Infof("skip the processing because there is no message link in the message.")
+		logger.Info("skip the processing because there is no message link in the message.")
 		return
 	}
 
@@ -48,7 +48,7 @@ func (h *ExpandHandler) Expand(ctx context.Context, s *discordgo.Session, m *dis
 	}
 
 	if ids.guild != m.GuildID {
-		logger.Infof("skip the processing because the message is not in the same guild.")
+		logger.Info("skip the processing because the message is not in the same guild.")
 		return
 	}
 
@@ -56,16 +56,16 @@ func (h *ExpandHandler) Expand(ctx context.Context, s *discordgo.Session, m *dis
 	if err != nil {
 		ch, err := s.Channel(ids.channel)
 		if err != nil {
-			logger.Error("failed to get the channel")
+			logger.Error("failed to get the channel", zap.Error(err))
 			return
 		}
 		if err := h.cache.Set(ctx, ids.channel, lo.FromPtr(ch)); err != nil {
-			logger.Errorf("failed to set the channel information to the cache: %v", err)
+			logger.Error("failed to set the channel information to the cache", zap.Error(err))
 		}
 		channel = ch
 	}
 	if channel.NSFW {
-		logger.Infof("skip the processing because the channel is NSFW.")
+		logger.Info("skip the processing because the channel is NSFW.")
 		return
 	}
 

@@ -5,106 +5,167 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var (
-	// defaultLogger holds a logger used to default logger.
-	// If you want to get a default logger. You must get default logger from DefaultLogger function.
-	// because, defaultLogger initialized when first call DefaultLogger function.
-	defaultLogger *zap.SugaredLogger
+type contextKey string
 
-	// defaultLoggerOnce is a sync.Once variable to create default logger once.
+const loggerKey = contextKey("logger")
+
+var (
+	defaultLogger     *zap.Logger
 	defaultLoggerOnce sync.Once
 )
 
-// NewLoggerFromEnv creates a logger with configuration from environment variables.
-// If not set environment variables, it will return a logger with production mode and info level.
-func NewLoggerFromEnv() *zap.SugaredLogger {
-	// develop is a flag variable to switch logger mode between develop mode or not develop mode.
-	// default is not develop mode.
-	// TODO: change to get environment variable from config provider.
+func NewLoggerFromEnv() *zap.Logger {
 	develop := strings.ToLower(strings.TrimSpace(os.Getenv("LOG_MODE"))) == "develop"
-
-	// level is a log level variable to set log level.
-	// TODO: change to get environment variable from config provider.
-	level := os.Getenv("LOG_LEVEL")
-
+	level := strings.TrimSpace(os.Getenv("LOG_LEVEL"))
 	return NewLogger(develop, level)
 }
 
-// NewLogger creates a logger with given configuration.
-// If not parse level argument, it will return a logger with info level.
-func NewLogger(develop bool, level string) *zap.SugaredLogger {
-	// config is a configuration to use base to create logger.
-	var config zap.Config
-
-	// TODO: customize logger configuration. but now, it is just a simple configuration.
+func NewLogger(develop bool, level string) *zap.Logger {
+	var cfg *zap.Config
 	if develop {
-		config = zap.NewDevelopmentConfig()
+		cfg = &zap.Config{
+			Level:            zap.NewAtomicLevelAt(levelToZapLevel(level)),
+			Development:      true,
+			Encoding:         encodingConsole,
+			OutputPaths:      outputStderr,
+			ErrorOutputPaths: outputStderr,
+			EncoderConfig:    developmentEncoderConfig,
+		}
 	} else {
-		config = zap.NewProductionConfig()
+		cfg = &zap.Config{
+			Level:            zap.NewAtomicLevelAt(levelToZapLevel(level)),
+			Encoding:         encodingJSON,
+			EncoderConfig:    productionEncoderConfig,
+			OutputPaths:      outputStderr,
+			ErrorOutputPaths: outputStderr,
+		}
 	}
-	config.Level = zap.NewAtomicLevelAt(stringToZapLevel(level))
-
-	logger, err := config.Build()
+	logger, err := cfg.Build()
 	if err != nil {
 		logger = zap.NewNop()
 	}
-	return logger.Sugar()
+	return logger
 }
 
-// DefaultLogger returns a logger from configuration based on environment variables.
-// If not created default logger, it will creates  a new logger and set it to default logger.
-func DefaultLogger() *zap.SugaredLogger {
+func DefaultLogger() *zap.Logger {
 	defaultLoggerOnce.Do(func() {
 		defaultLogger = NewLoggerFromEnv()
 	})
 	return defaultLogger
 }
 
-// stringToZapLevel convert given string to zap level.
-// If not match, it will return info level.
-func stringToZapLevel(level string) zapcore.Level {
-	switch strings.ToLower(level) {
-	case "debug":
+func WithLogger(ctx context.Context, logger *zap.Logger) context.Context {
+	return context.WithValue(ctx, loggerKey, logger)
+}
+
+func FromContext(ctx context.Context) *zap.Logger {
+	if logger, ok := ctx.Value(loggerKey).(*zap.Logger); ok {
+		return logger
+	}
+	return DefaultLogger()
+}
+
+const (
+	timestamp  = "timestamp"
+	severity   = "severity"
+	logger     = "logger"
+	caller     = "caller"
+	message    = "message"
+	stacktrace = "stacktrace"
+
+	levelDebug     = "DEBUG"
+	levelInfo      = "INFO"
+	levelWarning   = "WARNING"
+	levelError     = "ERROR"
+	levelCritical  = "CRITICAL"
+	levelAlert     = "ALERT"
+	levelEmergency = "EMERGENCY"
+
+	encodingConsole = "console"
+	encodingJSON    = "json"
+)
+
+var outputStderr = []string{"stderr"}
+
+var productionEncoderConfig = zapcore.EncoderConfig{
+	TimeKey:        timestamp,
+	LevelKey:       severity,
+	NameKey:        logger,
+	CallerKey:      caller,
+	MessageKey:     message,
+	StacktraceKey:  stacktrace,
+	LineEnding:     zapcore.DefaultLineEnding,
+	EncodeLevel:    levelEncoder(),
+	EncodeTime:     timeEncoder(),
+	EncodeDuration: zapcore.SecondsDurationEncoder,
+	EncodeCaller:   zapcore.ShortCallerEncoder,
+}
+
+var developmentEncoderConfig = zapcore.EncoderConfig{
+	TimeKey:        "",
+	LevelKey:       "L",
+	NameKey:        "N",
+	CallerKey:      "C",
+	FunctionKey:    zapcore.OmitKey,
+	MessageKey:     "M",
+	StacktraceKey:  "S",
+	LineEnding:     zapcore.DefaultLineEnding,
+	EncodeLevel:    zapcore.CapitalLevelEncoder,
+	EncodeTime:     zapcore.ISO8601TimeEncoder,
+	EncodeDuration: zapcore.StringDurationEncoder,
+	EncodeCaller:   zapcore.ShortCallerEncoder,
+}
+
+func levelToZapLevel(level string) zapcore.Level {
+	switch strings.ToUpper(level) {
+	case levelDebug:
 		return zapcore.DebugLevel
-	case "info":
+	case levelInfo:
 		return zapcore.InfoLevel
-	case "warn":
+	case levelWarning:
 		return zapcore.WarnLevel
-	case "error":
+	case levelError:
 		return zapcore.ErrorLevel
-	case "dpanic":
+	case levelCritical:
 		return zapcore.DPanicLevel
-	case "panic":
+	case levelAlert:
 		return zapcore.PanicLevel
-	case "fatal":
+	case levelEmergency:
 		return zapcore.FatalLevel
 	default:
 		return zapcore.InfoLevel
 	}
 }
 
-// contextKey is a private type used to define context key.
-type contextKey string
-
-// loggerKey is a context key to store logger in context.
-const loggerKey = contextKey("logger")
-
-// WithLogger stores a given logger to given context.
-// If context is nil, it will panic. because, this function is wrapper for context.WithValue.
-func WithLogger(ctx context.Context, logger *zap.SugaredLogger) context.Context {
-	return context.WithValue(ctx, loggerKey, logger)
+func levelEncoder() zapcore.LevelEncoder {
+	return func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
+		switch l {
+		case zapcore.DebugLevel:
+			enc.AppendString(levelDebug)
+		case zapcore.InfoLevel:
+			enc.AppendString(levelInfo)
+		case zapcore.WarnLevel:
+			enc.AppendString(levelWarning)
+		case zapcore.ErrorLevel:
+			enc.AppendString(levelError)
+		case zapcore.DPanicLevel:
+			enc.AppendString(levelCritical)
+		case zapcore.PanicLevel:
+			enc.AppendString(levelAlert)
+		case zapcore.FatalLevel:
+			enc.AppendString(levelEmergency)
+		}
+	}
 }
 
-// FromContext returns a logger from given context.
-// If not contained logger from given context, it will return a default logger.
-func FromContext(ctx context.Context) *zap.SugaredLogger {
-	if logger, ok := ctx.Value(loggerKey).(*zap.SugaredLogger); ok {
-		return logger
+func timeEncoder() zapcore.TimeEncoder {
+	return func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Format(time.RFC3339Nano))
 	}
-	return DefaultLogger()
 }
