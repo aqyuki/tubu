@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"github.com/aqyuki/tubu/internal/setup"
-	"github.com/aqyuki/tubu/packages/bot/command"
-	"github.com/aqyuki/tubu/packages/bot/handler"
 	"github.com/aqyuki/tubu/packages/config"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
+	"github.com/aqyuki/tubu/packages/service"
 	"github.com/bwmarrin/discordgo"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -47,16 +46,16 @@ var (
 			)
 			handler := discord.NewHandler(
 				discord.WithHandlerContextFunc(buildContextFunc(ctx)),
-				discord.WithReadyHandler(handler.ReadyHandler(md)),
-				discord.WithMessageCreateHandler(handler.NewExpandHandler(setup.NewCacheStore[discordgo.Channel](&conf)).Expand),
+				discord.WithReadyHandler(service.NewHealthService(md).HealthCheck),
+				discord.WithMessageCreateHandler(service.NewCitationService(setup.NewCacheStore[discordgo.Channel](&conf)).Citation),
 			)
 			router := discord.NewCommandRouter(
 				discord.WithCommandContextFunc(buildContextFunc(ctx)),
-				discord.WithCommand(command.NewVersionCommand(md)),
-				discord.WithCommand(command.NewDiceCommand()),
-				discord.WithCommand(command.NewChannelCommand()),
-				discord.WithCommand(command.NewGuildCommand(setup.NewCacheStore[discordgo.Guild](&conf))),
-				discord.WithCommand(command.NewSendDMCommand()),
+				discord.WithCommand(service.NewVersionService(md)),
+				discord.WithCommand(service.NewDiceService()),
+				discord.WithCommand(service.NewChannelInformationService()),
+				discord.WithCommand(service.NewGuildInformationService(setup.NewCacheStore[discordgo.Guild](&conf))),
+				discord.WithCommand(service.NewSendDMService()),
 			)
 
 			bot := discord.NewBot(md, config, handler, router)
