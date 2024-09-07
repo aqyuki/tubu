@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/aqyuki/tubu/packages/cache"
-	"github.com/aqyuki/tubu/packages/config"
+	"github.com/aqyuki/tubu/packages/profile"
 )
 
 const (
@@ -12,6 +12,6 @@ const (
 	defaultCleanup    = 30 * time.Minute
 )
 
-func NewCacheStore[T any](cnf *config.Config) cache.CacheStore[T] {
+func NewCacheStore[T any](prof *profile.Profile) cache.CacheStore[T] {
 	return cache.NewInMemoryCacheStore[T](defaultExpiration, defaultCleanup)
 }
