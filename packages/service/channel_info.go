@@ -46,7 +46,7 @@ func (s *ChannelInformationService) Handler() discord.InteractionCreateHandler {
 
 		channelOption, ok := optionMap[channelCommandChannelOptionName]
 		if !ok {
-			logger.Error("channel option is not found")
+			logger.Error("channel option is not found", zap.String("specified_channel_name", channelCommandChannelOptionName))
 			return
 		}
 		channel := channelOption.ChannelValue(session)

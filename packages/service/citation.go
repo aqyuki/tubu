@@ -32,13 +32,13 @@ func NewCitationService(cache cache.CacheStore[discordgo.Channel]) *CitationServ
 func (s *CitationService) Citation(ctx context.Context, session *discordgo.Session, message *discordgo.MessageCreate) {
 	logger := logging.FromContext(ctx)
 	if message.Author.Bot {
-		logger.Info("skip the processing because the message was created by the bot.")
+		logger.Debug("skip the processing because the message was created by the bot.")
 		return
 	}
 
 	links := s.extractMessageLinks(message.Content)
 	if len(links) == 0 {
-		logger.Info("skip the processing because there is no message link in the message.")
+		logger.Debug("skip the processing because there is no message link in the message.")
 		return
 	}
 
@@ -49,7 +49,7 @@ func (s *CitationService) Citation(ctx context.Context, session *discordgo.Sessi
 	}
 
 	if ids.guild != message.GuildID {
-		logger.Info("skip the processing because the message is not in the same guild.")
+		logger.Debug("skip the processing because the message is not in the same guild.")
 		return
 	}
 
@@ -61,23 +61,23 @@ func (s *CitationService) Citation(ctx context.Context, session *discordgo.Sessi
 			return
 		}
 		if err := s.cache.Set(ctx, ids.channel, lo.FromPtr(ch)); err != nil {
-			logger.Error("failed to set the channel information to the cache", zap.Error(err))
+			logger.Warn("failed to set the channel information to the cache", zap.Error(err))
 		}
 		channel = ch
 	}
 	if channel.NSFW {
-		logger.Info("skip the processing because the channel is NSFW.")
+		logger.Debug("skip the processing because the channel is NSFW.")
 		return
 	}
 
 	msg, err := session.ChannelMessage(ids.channel, ids.message)
 	if err != nil {
-		logger.Error("failed to get the message")
+		logger.Error("failed to get the message", zap.Error(err))
 		return
 	}
 
 	if msg.Content == "" {
-		logger.Info("skip the processing because the message content is empty.")
+		logger.Debug("skip the processing because the message content is empty.")
 		return
 	}
 
@@ -113,7 +113,7 @@ func (s *CitationService) Citation(ctx context.Context, session *discordgo.Sessi
 		logger.Error("failed to send message", zap.Error(err))
 		return
 	}
-	logger.Info("message link expanded")
+	logger.Info("citation message has been sent", zap.String("channel_id", message.ChannelID), zap.String("message_id", message.ID))
 }
 
 func (s *CitationService) extractMessageLinks(text string) []string {

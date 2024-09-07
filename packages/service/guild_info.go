@@ -75,6 +75,7 @@ func (s *GuildInformationService) Handler() discord.InteractionCreateHandler {
 			logger.Error("failed to respond", zap.Error(err))
 			return
 		}
+		logger.Info("guild information is sent")
 	}
 }
 
