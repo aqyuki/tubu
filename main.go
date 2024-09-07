@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,6 +21,8 @@ import (
 )
 
 var (
+	ErrInvalidConfig = errors.New("config: invalid config")
+
 	rootCmd = &cobra.Command{
 		Use:   "tubu",
 		Short: "tubu is a discord bot",
@@ -35,7 +38,7 @@ var (
 			ctx = logging.WithLogger(ctx, logger)
 
 			if !prof.IsValid() {
-				return profile.ErrInvalidConfig
+				return ErrInvalidConfig
 			}
 			logger.Info("bot configuration was loaded successfully")
 

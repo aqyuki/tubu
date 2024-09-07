@@ -1,12 +1,7 @@
 package profile
 
 import (
-	"errors"
 	"time"
-)
-
-var (
-	ErrInvalidConfig = errors.New("config: invalid config")
 )
 
 type Profile struct {
