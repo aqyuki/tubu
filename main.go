@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/aqyuki/tubu/internal/setup"
+	"github.com/aqyuki/tubu/packages/discord"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
-	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/aqyuki/tubu/packages/profile"
 	"github.com/aqyuki/tubu/packages/service"
 	"github.com/bwmarrin/discordgo"

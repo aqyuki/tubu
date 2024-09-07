@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aqyuki/tubu/packages/discord"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
-	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/bwmarrin/discordgo"
 	"go.uber.org/zap"
 )

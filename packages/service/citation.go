@@ -9,7 +9,7 @@ import (
 
 	"github.com/aqyuki/tubu/packages/cache"
 	"github.com/aqyuki/tubu/packages/logging"
-	"github.com/aqyuki/tubu/packages/platform/discord"
+	"github.com/aqyuki/tubu/packages/discord"
 	"github.com/bwmarrin/discordgo"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
