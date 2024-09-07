@@ -31,7 +31,9 @@ tasks:
   full-test:
     desc: "全てのテストを実行します．"
     cmds:
+      - docker compose -f compose.dev.yml up -d
       - go test -v -shuffle=on ./...
+      - docker compose -f compose.dev.yml down
   coverage:
     desc: "カバレッジを測定します．"
     cmds:
