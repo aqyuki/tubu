@@ -39,4 +39,6 @@ tasks:
   coverage:
     desc: "カバレッジを測定します．"
     cmds:
+      - docker compose -f compose.dev.yml up -d
       - go test  -v -shuffle=on  -coverprofile=coverage.out ./...
+      - docker compose -f compose.dev.yml down
