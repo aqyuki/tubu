@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/aqyuki/tubu/internal/setup"
+	"github.com/aqyuki/tubu/packages/discord"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
-	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/aqyuki/tubu/packages/profile"
 	"github.com/aqyuki/tubu/packages/service"
 	"github.com/bwmarrin/discordgo"
@@ -61,7 +61,7 @@ var (
 				discord.WithCommand(service.NewSendDMService()),
 			)
 
-			bot := discord.NewBot(md, config, handler, router)
+			bot := discord.NewBot(config, handler, router)
 			if err := bot.Start(prof.Token); err != nil {
 				logger.Error("failed to start bot", zap.Error(err))
 				return err

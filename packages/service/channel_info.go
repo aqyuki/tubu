@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/aqyuki/tubu/packages/logging"
-	"github.com/aqyuki/tubu/packages/platform/discord"
+	"github.com/aqyuki/tubu/packages/discord"
 	"github.com/bwmarrin/discordgo"
 	"go.uber.org/zap"
 )
