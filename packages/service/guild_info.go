@@ -27,7 +27,7 @@ func NewGuildInformationService(cache cache.CacheStore[discordgo.Guild]) *GuildI
 func (s *GuildInformationService) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "guild",
-		Description: "ギルドの情報を表示します.",
+		Description: "ギルドについて確認します．",
 	}
 }
 
@@ -50,8 +50,8 @@ func (s *GuildInformationService) Handler() discord.InteractionCreateHandler {
 		}
 
 		embed := &discordgo.MessageEmbed{
-			Title:       "拠点情報",
-			Description: "このサーバーの情報だよ！",
+			Title:       "ギルドについて",
+			Description: "このサーバーについてです．",
 			Color:       EmbedColor,
 			Fields: []*discordgo.MessageEmbedField{
 				s.guildName(guild),

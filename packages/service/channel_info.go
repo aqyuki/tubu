@@ -21,17 +21,18 @@ func NewChannelInformationService() *ChannelInformationService { return &Channel
 func (s *ChannelInformationService) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "channel",
-		Description: "チャンネルの情報を表示します.",
+		Description: "チャンネルについて確認します",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Type:        discordgo.ApplicationCommandOptionChannel,
 				Name:        channelCommandChannelOptionName,
-				Description: "情報を表示するチャンネルを指定します.",
+				Description: "確認したいチャンネルを伝えてください...",
 				Required:    true,
 			},
 		},
 	}
 }
+
 func (s *ChannelInformationService) Handler() discord.InteractionCreateHandler {
 	return func(ctx context.Context, session *discordgo.Session, ic *discordgo.InteractionCreate) {
 		logger := logging.FromContext(ctx)
@@ -51,8 +52,8 @@ func (s *ChannelInformationService) Handler() discord.InteractionCreateHandler {
 		channel := channelOption.ChannelValue(session)
 
 		embed := &discordgo.MessageEmbed{
-			Title:       "チャンネルの情報",
-			Description: "頼まれていたチャンネルの情報だよ！",
+			Title:       "チャンネルについて",
+			Description: "頼まれていたチャンネルについてです．",
 			Color:       EmbedColor,
 			Fields: []*discordgo.MessageEmbedField{
 				s.channelName(channel),

@@ -24,7 +24,7 @@ func NewVersionService(md *metadata.Metadata) *VersionService {
 func (s *VersionService) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "version",
-		Description: "Botのバージョンを表示します",
+		Description: "Botのバージョンを確認します",
 	}
 }
 
