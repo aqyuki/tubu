@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/aqyuki/tubu/internal/setup"
-	"github.com/aqyuki/tubu/packages/config"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
+	"github.com/aqyuki/tubu/packages/profile"
 	"github.com/aqyuki/tubu/packages/service"
 	"github.com/bwmarrin/discordgo"
 	"github.com/spf13/cobra"
@@ -20,11 +21,13 @@ import (
 )
 
 var (
+	ErrInvalidConfig = errors.New("config: invalid config")
+
 	rootCmd = &cobra.Command{
 		Use:   "tubu",
 		Short: "tubu is a discord bot",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			conf := config.Config{
+			prof := profile.Profile{
 				Token:   viper.GetString("token"),
 				Timeout: viper.GetDuration("timeout"),
 			}
@@ -34,32 +37,32 @@ var (
 			defer done()
 			ctx = logging.WithLogger(ctx, logger)
 
-			if !conf.IsValid() {
-				return config.ErrInvalidConfig
+			if !prof.IsValid() {
+				return ErrInvalidConfig
 			}
 			logger.Info("bot configuration was loaded successfully")
 
 			md := metadata.GetMetadata()
 
 			config := discord.NewConfig(
-				discord.WithAPITimeout(conf.Timeout),
+				discord.WithAPITimeout(prof.Timeout),
 			)
 			handler := discord.NewHandler(
 				discord.WithHandlerContextFunc(buildContextFunc(ctx)),
 				discord.WithReadyHandler(service.NewHealthService(md).HealthCheck),
-				discord.WithMessageCreateHandler(service.NewCitationService(setup.NewCacheStore[discordgo.Channel](&conf)).Citation),
+				discord.WithMessageCreateHandler(service.NewCitationService(setup.NewCacheStore[discordgo.Channel](&prof)).Citation),
 			)
 			router := discord.NewCommandRouter(
 				discord.WithCommandContextFunc(buildContextFunc(ctx)),
 				discord.WithCommand(service.NewVersionService(md)),
 				discord.WithCommand(service.NewDiceService()),
 				discord.WithCommand(service.NewChannelInformationService()),
-				discord.WithCommand(service.NewGuildInformationService(setup.NewCacheStore[discordgo.Guild](&conf))),
+				discord.WithCommand(service.NewGuildInformationService(setup.NewCacheStore[discordgo.Guild](&prof))),
 				discord.WithCommand(service.NewSendDMService()),
 			)
 
 			bot := discord.NewBot(md, config, handler, router)
-			if err := bot.Start(conf.Token); err != nil {
+			if err := bot.Start(prof.Token); err != nil {
 				logger.Error("failed to start bot", zap.Error(err))
 				return err
 			}
