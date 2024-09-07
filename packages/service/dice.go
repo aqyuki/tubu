@@ -39,13 +39,13 @@ func (s *DiceRollService) Command() *discordgo.ApplicationCommand {
 			{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Name:        diceCommandCountOptionName,
-				Description: "振るダイスの個数を指定します.",
+				Description: "振るサイコロの個数を指定してください.",
 				Required:    true,
 			},
 			{
 				Type:        discordgo.ApplicationCommandOptionInteger,
 				Name:        diceCommandFaceOptionName,
-				Description: "振るダイスの面数を指定します.",
+				Description: "振るサイコロの面数を指定してください.",
 				Required:    true,
 			},
 		},
@@ -127,7 +127,7 @@ func (s *DiceRollService) errorResponse(name string) *discordgo.InteractionRespo
 			Embeds: []*discordgo.MessageEmbed{{
 				Title:       "内部エラー",
 				Color:       EmbedColor,
-				Description: "エラーが発生したようです．責任持って修正してください．",
+				Description: "サイコロを振るのに失敗しちゃいました．",
 				Fields: []*discordgo.MessageEmbedField{{
 					Name:  "Error",
 					Value: fmt.Sprintf("Option `%s` is not found", name),

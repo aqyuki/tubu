@@ -57,7 +57,7 @@ func (s *SendDMService) Handler() discord.InteractionCreateHandler {
 		if err := session.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "DMにピン留めしておいたよ！",
+				Content: "DMにピン留めしておきました．",
 			},
 		}); err != nil {
 			logger.Error("failed to respond to interaction", zap.Error(err))
