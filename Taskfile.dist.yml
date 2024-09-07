@@ -30,6 +30,8 @@ tasks:
       - go test -v -shuffle=on -short ./...
   full-test:
     desc: "全てのテストを実行します．"
+    env:
+      TEST_DATABASE_URL: "postgresql://user:password@localhost:5432/tubu_dev?sslmode=disable"
     cmds:
       - docker compose -f compose.dev.yml up -d
       - go test -v -shuffle=on ./...
