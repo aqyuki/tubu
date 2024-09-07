@@ -1,44 +1,40 @@
-package command
+package service
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/aqyuki/tubu/packages/bot/common"
 	"github.com/aqyuki/tubu/packages/logging"
-	"github.com/aqyuki/tubu/packages/platform/discord"
+	"github.com/aqyuki/tubu/packages/discord"
 	"github.com/bwmarrin/discordgo"
+	"go.uber.org/zap"
 )
 
-var _ discord.Command = (*ChannelCommand)(nil)
+var _ discord.Command = (*ChannelInformationService)(nil)
 
-const (
-	channelCommandChannelOptionName = "channel"
-)
+const channelCommandChannelOptionName = "channel"
 
-type ChannelCommand struct{}
+type ChannelInformationService struct{}
 
-func NewChannelCommand() *ChannelCommand {
-	return &ChannelCommand{}
-}
+func NewChannelInformationService() *ChannelInformationService { return &ChannelInformationService{} }
 
-func (c *ChannelCommand) Command() *discordgo.ApplicationCommand {
+func (s *ChannelInformationService) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "channel",
-		Description: "チャンネルの情報を表示します.",
+		Description: "チャンネルについて確認します",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
 				Type:        discordgo.ApplicationCommandOptionChannel,
 				Name:        channelCommandChannelOptionName,
-				Description: "情報を表示するチャンネルを指定します.",
+				Description: "確認したいチャンネルを伝えてください...",
 				Required:    true,
 			},
 		},
 	}
 }
 
-func (c *ChannelCommand) Handler() discord.InteractionCreateHandler {
-	return func(ctx context.Context, s *discordgo.Session, ic *discordgo.InteractionCreate) {
+func (s *ChannelInformationService) Handler() discord.InteractionCreateHandler {
+	return func(ctx context.Context, session *discordgo.Session, ic *discordgo.InteractionCreate) {
 		logger := logging.FromContext(ctx)
 		logger.Debug("Channel command is called")
 
@@ -50,35 +46,35 @@ func (c *ChannelCommand) Handler() discord.InteractionCreateHandler {
 
 		channelOption, ok := optionMap[channelCommandChannelOptionName]
 		if !ok {
-			logger.Error("channel option is not found")
+			logger.Error("channel option is not found", zap.String("specified_channel_name", channelCommandChannelOptionName))
 			return
 		}
-		channel := channelOption.ChannelValue(s)
+		channel := channelOption.ChannelValue(session)
 
 		embed := &discordgo.MessageEmbed{
-			Title:       "チャンネルの情報",
-			Description: "頼まれていたチャンネルの情報だよ！",
-			Color:       common.EmbedColor,
+			Title:       "チャンネルについて",
+			Description: "頼まれていたチャンネルについてです．",
+			Color:       EmbedColor,
 			Fields: []*discordgo.MessageEmbedField{
-				c.channelName(channel),
-				c.channelType(channel),
-				c.createdAt(channel),
+				s.channelName(channel),
+				s.channelType(channel),
+				s.createdAt(channel),
 			},
 		}
 
-		if err := s.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
+		if err := session.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Embeds: []*discordgo.MessageEmbed{embed},
 			},
 		}); err != nil {
-			logger.Error("failed to respond", "error", err)
+			logger.Error("failed to respond", zap.Error(err))
 			return
 		}
 	}
 }
 
-func (c *ChannelCommand) channelName(ch *discordgo.Channel) *discordgo.MessageEmbedField {
+func (s *ChannelInformationService) channelName(ch *discordgo.Channel) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "チャンネル名",
 		Value:  fmt.Sprintf("<#%s>", ch.ID),
@@ -86,7 +82,7 @@ func (c *ChannelCommand) channelName(ch *discordgo.Channel) *discordgo.MessageEm
 	}
 }
 
-func (c *ChannelCommand) channelType(ch *discordgo.Channel) *discordgo.MessageEmbedField {
+func (s *ChannelInformationService) channelType(ch *discordgo.Channel) *discordgo.MessageEmbedField {
 	var channelType string
 	switch ch.Type {
 	case discordgo.ChannelTypeGuildText:
@@ -117,7 +113,7 @@ func (c *ChannelCommand) channelType(ch *discordgo.Channel) *discordgo.MessageEm
 	}
 }
 
-func (c *ChannelCommand) createdAt(ch *discordgo.Channel) *discordgo.MessageEmbedField {
+func (s *ChannelInformationService) createdAt(ch *discordgo.Channel) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "作成日時",
 		Value:  fmt.Sprintf("<t:%d>", discord.TimestampFromSnowflake(ch.ID).Unix()),

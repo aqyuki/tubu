@@ -1,4 +1,4 @@
-package handler
+package service
 
 import (
 	"context"
@@ -7,76 +7,77 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aqyuki/tubu/packages/bot/common"
 	"github.com/aqyuki/tubu/packages/cache"
 	"github.com/aqyuki/tubu/packages/logging"
+	"github.com/aqyuki/tubu/packages/discord"
 	"github.com/bwmarrin/discordgo"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
-type ExpandHandler struct {
+var _ discord.MessageCreateHandler = (*CitationService)(nil).Citation
+
+type CitationService struct {
 	rgx   *regexp.Regexp
 	cache cache.CacheStore[discordgo.Channel]
 }
 
-func NewExpandHandler(cache cache.CacheStore[discordgo.Channel]) *ExpandHandler {
-	return &ExpandHandler{
+func NewCitationService(cache cache.CacheStore[discordgo.Channel]) *CitationService {
+	return &CitationService{
 		rgx:   regexp.MustCompile(`https://(?:ptb\.|canary\.)?discord(app)?\.com/channels/(\d+)/(\d+)/(\d+)`),
 		cache: cache,
 	}
 }
 
-// ExpandHandler is a handler that expands the link in the message.
-func (h *ExpandHandler) Expand(ctx context.Context, s *discordgo.Session, m *discordgo.MessageCreate) {
+func (s *CitationService) Citation(ctx context.Context, session *discordgo.Session, message *discordgo.MessageCreate) {
 	logger := logging.FromContext(ctx)
-	if m.Author.Bot {
-		logger.Infof("skip the processing because the message was created by the bot.")
+	if message.Author.Bot {
+		logger.Debug("skip the processing because the message was created by the bot.")
 		return
 	}
 
-	links := h.extractMessageLinks(m.Content)
+	links := s.extractMessageLinks(message.Content)
 	if len(links) == 0 {
-		logger.Infof("skip the processing because there is no message link in the message.")
+		logger.Debug("skip the processing because there is no message link in the message.")
 		return
 	}
 
-	ids, err := h.extractMessageInfo(links[0])
+	ids, err := s.extractMessageInfo(links[0])
 	if err != nil {
 		logger.Error("failed to extract the id from the message link")
 		return
 	}
 
-	if ids.guild != m.GuildID {
-		logger.Infof("skip the processing because the message is not in the same guild.")
+	if ids.guild != message.GuildID {
+		logger.Debug("skip the processing because the message is not in the same guild.")
 		return
 	}
 
-	channel, err := h.cache.Get(ctx, ids.channel)
+	channel, err := s.cache.Get(ctx, ids.channel)
 	if err != nil {
-		ch, err := s.Channel(ids.channel)
+		ch, err := session.Channel(ids.channel)
 		if err != nil {
-			logger.Error("failed to get the channel")
+			logger.Error("failed to get the channel", zap.Error(err))
 			return
 		}
-		if err := h.cache.Set(ctx, ids.channel, lo.FromPtr(ch)); err != nil {
-			logger.Errorf("failed to set the channel information to the cache: %v", err)
+		if err := s.cache.Set(ctx, ids.channel, lo.FromPtr(ch)); err != nil {
+			logger.Warn("failed to set the channel information to the cache", zap.Error(err))
 		}
 		channel = ch
 	}
 	if channel.NSFW {
-		logger.Infof("skip the processing because the channel is NSFW.")
+		logger.Debug("skip the processing because the channel is NSFW.")
 		return
 	}
 
-	msg, err := s.ChannelMessage(ids.channel, ids.message)
+	msg, err := session.ChannelMessage(ids.channel, ids.message)
 	if err != nil {
-		logger.Error("failed to get the message")
+		logger.Error("failed to get the message", zap.Error(err))
 		return
 	}
 
 	if msg.Content == "" {
-		logger.Info("skip the processing because the message content is empty.")
+		logger.Debug("skip the processing because the message content is empty.")
 		return
 	}
 
@@ -93,7 +94,7 @@ func (h *ExpandHandler) Expand(ctx context.Context, s *discordgo.Session, m *dis
 			Name:    msg.Author.Username,
 			IconURL: msg.Author.AvatarURL("64"),
 		},
-		Color:       common.EmbedColor,
+		Color:       EmbedColor,
 		Description: msg.Content,
 		Timestamp:   msg.Timestamp.Format(time.RFC3339),
 		Footer: &discordgo.MessageEmbedFooter{
@@ -103,20 +104,20 @@ func (h *ExpandHandler) Expand(ctx context.Context, s *discordgo.Session, m *dis
 
 	replyMsg := discordgo.MessageSend{
 		Embed:     embed,
-		Reference: m.Reference(),
+		Reference: message.Reference(),
 		AllowedMentions: &discordgo.MessageAllowedMentions{
 			RepliedUser: true,
 		},
 	}
-	if _, err := s.ChannelMessageSendComplex(m.ChannelID, &replyMsg); err != nil {
+	if _, err := session.ChannelMessageSendComplex(message.ChannelID, &replyMsg); err != nil {
 		logger.Error("failed to send message", zap.Error(err))
 		return
 	}
-	logger.Info("message link expanded")
+	logger.Info("citation message has been sent", zap.String("channel_id", message.ChannelID), zap.String("message_id", message.ID))
 }
 
-func (h *ExpandHandler) extractMessageLinks(s string) []string {
-	return h.rgx.FindAllString(s, -1)
+func (s *CitationService) extractMessageLinks(text string) []string {
+	return s.rgx.FindAllString(text, -1)
 }
 
 type message struct {
@@ -126,7 +127,7 @@ type message struct {
 }
 
 // extractMessageInfo extracts the channel ID and message ID from the message link.
-func (h *ExpandHandler) extractMessageInfo(link string) (info message, err error) {
+func (s *CitationService) extractMessageInfo(link string) (info message, err error) {
 	segments := strings.Split(link, "/")
 	if len(segments) < 4 {
 		return message{}, errors.New("invalid message link")

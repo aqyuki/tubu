@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -16,7 +15,6 @@ var (
 
 type Bot struct {
 	session           *discordgo.Session
-	metadata          *metadata.Metadata
 	handler           *Handler
 	config            *Config
 	commandRouter     *CommandRouter
@@ -24,14 +22,13 @@ type Bot struct {
 	registeredCommand []*discordgo.ApplicationCommand
 }
 
-func NewBot(md *metadata.Metadata, cfg *Config, handler *Handler, cmd *CommandRouter) *Bot {
+func NewBot(cfg *Config, handler *Handler, cmd *CommandRouter) *Bot {
 	if cfg == nil {
 		cfg = DefaultConfig()
 	}
 
 	return &Bot{
 		session:           nil, // Session is initialized at bot startup
-		metadata:          md,
 		config:            cfg,
 		handler:           handler,
 		commandRouter:     cmd,

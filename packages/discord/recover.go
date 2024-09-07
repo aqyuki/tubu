@@ -10,6 +10,6 @@ import (
 func recoveryPanic(ctx context.Context, a any) {
 	if r := recover(); r != nil {
 		logger := logging.FromContext(ctx)
-		logger.Errorw("recovered from panic", zap.Any("panic", r), zap.Any("detail", a))
+		logger.Error("recovered from panic", zap.Any("panic", r), zap.Any("detail", a))
 	}
 }
