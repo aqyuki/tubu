@@ -61,7 +61,7 @@ var (
 				discord.WithCommand(service.NewSendDMService()),
 			)
 
-			bot := discord.NewBot(md, config, handler, router)
+			bot := discord.NewBot(config, handler, router)
 			if err := bot.Start(prof.Token); err != nil {
 				logger.Error("failed to start bot", zap.Error(err))
 				return err
