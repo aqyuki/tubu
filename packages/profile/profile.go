@@ -1,4 +1,4 @@
-package config
+package profile
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ var (
 	ErrInvalidConfig = errors.New("config: invalid config")
 )
 
-type Config struct {
+type Profile struct {
 	// Token is a Discord bot token. It is required.
 	Token string
 
@@ -17,6 +17,6 @@ type Config struct {
 	Timeout time.Duration
 }
 
-func (c Config) IsValid() bool {
+func (c Profile) IsValid() bool {
 	return c.Token != ""
 }
