@@ -1,10 +1,9 @@
-package command
+package service
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/aqyuki/tubu/packages/bot/common"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/metadata"
 	"github.com/aqyuki/tubu/packages/platform/discord"
@@ -12,34 +11,34 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ discord.Command = (*VersionCommand)(nil)
+var _ discord.Command = (*VersionService)(nil)
 
-type VersionCommand struct {
+type VersionService struct {
 	md *metadata.Metadata
 }
 
-func NewVersionCommand(md *metadata.Metadata) *VersionCommand {
-	return &VersionCommand{md: md}
+func NewVersionService(md *metadata.Metadata) *VersionService {
+	return &VersionService{md: md}
 }
 
-func (c *VersionCommand) Command() *discordgo.ApplicationCommand {
+func (s *VersionService) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "version",
 		Description: "Botのバージョンを表示します",
 	}
 }
 
-func (c *VersionCommand) Handler() discord.InteractionCreateHandler {
-	return func(ctx context.Context, s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (s *VersionService) Handler() discord.InteractionCreateHandler {
+	return func(ctx context.Context, ses *discordgo.Session, i *discordgo.InteractionCreate) {
 		logger := logging.FromContext(ctx)
 		logger.Debug("version command is called")
 
 		embed := &discordgo.MessageEmbed{
 			Title:       "現在のバージョン",
-			Color:       common.EmbedColor,
-			Description: fmt.Sprintf("現在のバージョンは `%s` です", c.md.Version),
+			Color:       EmbedColor,
+			Description: fmt.Sprintf("現在のバージョンは `%s` です", s.md.Version),
 		}
-		if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		if err := ses.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Embeds: []*discordgo.MessageEmbed{embed},

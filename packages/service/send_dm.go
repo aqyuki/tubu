@@ -1,4 +1,4 @@
-package command
+package service
 
 import (
 	"context"
@@ -9,15 +9,15 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ discord.Command = (*SendDMCommand)(nil)
+var _ discord.Command = (*SendDMService)(nil)
 
-type SendDMCommand struct{}
+type SendDMService struct{}
 
-func NewSendDMCommand() *SendDMCommand {
-	return &SendDMCommand{}
+func NewSendDMService() *SendDMService {
+	return &SendDMService{}
 }
 
-func (c *SendDMCommand) Command() *discordgo.ApplicationCommand {
+func (s *SendDMService) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Type:              discordgo.MessageApplicationCommand,
 		Name:              "Send DM",
@@ -25,8 +25,8 @@ func (c *SendDMCommand) Command() *discordgo.ApplicationCommand {
 	}
 }
 
-func (c *SendDMCommand) Handler() discord.InteractionCreateHandler {
-	return func(ctx context.Context, s *discordgo.Session, ic *discordgo.InteractionCreate) {
+func (s *SendDMService) Handler() discord.InteractionCreateHandler {
+	return func(ctx context.Context, session *discordgo.Session, ic *discordgo.InteractionCreate) {
 		logger := logging.FromContext(ctx)
 		logger.Debug("send_dm command is called")
 
@@ -41,20 +41,20 @@ func (c *SendDMCommand) Handler() discord.InteractionCreateHandler {
 			return
 		}
 
-		dm, err := s.UserChannelCreate(ic.Member.User.ID)
+		dm, err := session.UserChannelCreate(ic.Member.User.ID)
 		if err != nil {
 			logger.Error("failed to create DM channel", zap.Error(err))
 			return
 		}
 
-		if _, err := s.ChannelMessageSendComplex(dm.ID, &discordgo.MessageSend{
+		if _, err := session.ChannelMessageSendComplex(dm.ID, &discordgo.MessageSend{
 			Content: message.Content,
 		}); err != nil {
 			logger.Error("failed to send DM message", zap.Error(err))
 			return
 		}
 
-		if err := s.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
+		if err := session.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "DMにピン留めしておいたよ！",

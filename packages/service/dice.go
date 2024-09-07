@@ -1,20 +1,19 @@
-package command
+package service
 
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"strings"
 
-	"github.com/aqyuki/tubu/packages/bot/common"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/platform/discord"
 	"github.com/bwmarrin/discordgo"
 	"go.uber.org/zap"
+	"golang.org/x/exp/rand"
 )
 
-var _ discord.Command = (*DiceCommand)(nil)
+var _ discord.Command = (*DiceRollService)(nil)
 
 const (
 	diceCommandCountOptionName = "count"
@@ -26,13 +25,13 @@ const (
 	diceCommandMaxFace  = 100
 )
 
-type DiceCommand struct{}
+type DiceRollService struct{}
 
-func NewDiceCommand() *DiceCommand {
-	return &DiceCommand{}
+func NewDiceService() *DiceRollService {
+	return &DiceRollService{}
 }
 
-func (c *DiceCommand) Command() *discordgo.ApplicationCommand {
+func (s *DiceRollService) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "dice",
 		Description: "サイコロを振ります.",
@@ -53,8 +52,8 @@ func (c *DiceCommand) Command() *discordgo.ApplicationCommand {
 	}
 }
 
-func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
-	return func(ctx context.Context, s *discordgo.Session, ic *discordgo.InteractionCreate) {
+func (s *DiceRollService) Handler() discord.InteractionCreateHandler {
+	return func(ctx context.Context, session *discordgo.Session, ic *discordgo.InteractionCreate) {
 		logger := logging.FromContext(ctx)
 		logger.Debug("dice command is called")
 
@@ -67,13 +66,13 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 		countOpt, ok := optionMap[diceCommandCountOptionName]
 		if !ok {
 			logger.Error("option is not found", zap.String("name", diceCommandCountOptionName))
-			s.InteractionRespond(ic.Interaction, c.errorResponse(diceCommandCountOptionName))
+			session.InteractionRespond(ic.Interaction, s.errorResponse(diceCommandCountOptionName))
 			return
 		}
 		faceOpt, ok := optionMap[diceCommandFaceOptionName]
 		if !ok {
 			logger.Error("option is not found", zap.String("name", diceCommandFaceOptionName))
-			s.InteractionRespond(ic.Interaction, c.errorResponse(diceCommandFaceOptionName))
+			session.InteractionRespond(ic.Interaction, s.errorResponse(diceCommandFaceOptionName))
 			return
 		}
 
@@ -100,7 +99,7 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 		msg := strings.Join(result, " + ")
 		embed := &discordgo.MessageEmbed{
 			Title: "ダイスロール",
-			Color: common.EmbedColor,
+			Color: EmbedColor,
 			Fields: []*discordgo.MessageEmbedField{
 				{
 					Name:   "Result",
@@ -110,7 +109,7 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 			},
 		}
 
-		if err := s.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
+		if err := session.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Embeds: []*discordgo.MessageEmbed{embed},
@@ -121,13 +120,13 @@ func (c *DiceCommand) Handler() discord.InteractionCreateHandler {
 	}
 }
 
-func (c *DiceCommand) errorResponse(name string) *discordgo.InteractionResponse {
+func (s *DiceRollService) errorResponse(name string) *discordgo.InteractionResponse {
 	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{{
 				Title:       "内部エラー",
-				Color:       common.EmbedColor,
+				Color:       EmbedColor,
 				Description: "エラーが発生したようです．責任持って修正してください．",
 				Fields: []*discordgo.MessageEmbedField{{
 					Name:  "Error",

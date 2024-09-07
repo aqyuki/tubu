@@ -1,10 +1,9 @@
-package command
+package service
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/aqyuki/tubu/packages/bot/common"
 	"github.com/aqyuki/tubu/packages/cache"
 	"github.com/aqyuki/tubu/packages/logging"
 	"github.com/aqyuki/tubu/packages/platform/discord"
@@ -13,38 +12,38 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ discord.Command = (*GuildCommand)(nil)
+var _ discord.Command = (*GuildInformationService)(nil)
 
-type GuildCommand struct {
+type GuildInformationService struct {
 	cache cache.CacheStore[discordgo.Guild]
 }
 
-func NewGuildCommand(cache cache.CacheStore[discordgo.Guild]) *GuildCommand {
-	return &GuildCommand{
+func NewGuildInformationService(cache cache.CacheStore[discordgo.Guild]) *GuildInformationService {
+	return &GuildInformationService{
 		cache: cache,
 	}
 }
 
-func (c *GuildCommand) Command() *discordgo.ApplicationCommand {
+func (s *GuildInformationService) Command() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
 		Name:        "guild",
 		Description: "ギルドの情報を表示します.",
 	}
 }
 
-func (c *GuildCommand) Handler() discord.InteractionCreateHandler {
-	return func(ctx context.Context, s *discordgo.Session, ic *discordgo.InteractionCreate) {
+func (s *GuildInformationService) Handler() discord.InteractionCreateHandler {
+	return func(ctx context.Context, session *discordgo.Session, ic *discordgo.InteractionCreate) {
 		logger := logging.FromContext(ctx)
 		logger.Debug("guild command is called")
 
-		guild, err := c.cache.Get(ctx, ic.GuildID)
+		guild, err := s.cache.Get(ctx, ic.GuildID)
 		if err != nil {
-			g, err := s.Guild(ic.GuildID)
+			g, err := session.Guild(ic.GuildID)
 			if err != nil {
 				logger.Error("Failed to get guild", zap.Error(err))
 				return
 			}
-			if err := c.cache.Set(ctx, ic.GuildID, lo.FromPtr(g)); err != nil {
+			if err := s.cache.Set(ctx, ic.GuildID, lo.FromPtr(g)); err != nil {
 				logger.Error("failed to set the guild information to the cache", zap.Error(err))
 			}
 			guild = g
@@ -53,21 +52,21 @@ func (c *GuildCommand) Handler() discord.InteractionCreateHandler {
 		embed := &discordgo.MessageEmbed{
 			Title:       "拠点情報",
 			Description: "このサーバーの情報だよ！",
-			Color:       common.EmbedColor,
+			Color:       EmbedColor,
 			Fields: []*discordgo.MessageEmbedField{
-				c.guildName(guild),
-				c.guildOwner(guild),
-				c.afkChannel(guild),
-				c.channelCount(guild),
-				c.emojiCount(guild),
-				c.roleCount(guild),
-				c.stickerCount(guild),
-				c.memberCount(guild),
-				c.scale(guild),
-				c.createdAt(guild),
+				s.guildName(guild),
+				s.guildOwner(guild),
+				s.afkChannel(guild),
+				s.channelCount(guild),
+				s.emojiCount(guild),
+				s.roleCount(guild),
+				s.stickerCount(guild),
+				s.memberCount(guild),
+				s.scale(guild),
+				s.createdAt(guild),
 			},
 		}
-		if err := s.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
+		if err := session.InteractionRespond(ic.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Embeds: []*discordgo.MessageEmbed{embed},
@@ -79,7 +78,7 @@ func (c *GuildCommand) Handler() discord.InteractionCreateHandler {
 	}
 }
 
-func (c *GuildCommand) guildName(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) guildName(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "サーバー名",
 		Value:  guild.Name,
@@ -87,7 +86,7 @@ func (c *GuildCommand) guildName(guild *discordgo.Guild) *discordgo.MessageEmbed
 	}
 }
 
-func (c *GuildCommand) guildOwner(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) guildOwner(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "オーナー",
 		Value:  fmt.Sprintf("<@%s>", guild.OwnerID),
@@ -95,7 +94,7 @@ func (c *GuildCommand) guildOwner(guild *discordgo.Guild) *discordgo.MessageEmbe
 	}
 }
 
-func (c *GuildCommand) afkChannel(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) afkChannel(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	var afk string
 	if guild.AfkChannelID == "" {
 		afk = "なし"
@@ -110,7 +109,7 @@ func (c *GuildCommand) afkChannel(guild *discordgo.Guild) *discordgo.MessageEmbe
 	}
 }
 
-func (c *GuildCommand) channelCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) channelCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "チャンネル数",
 		Value:  fmt.Sprintf("%d", len(guild.Channels)),
@@ -118,7 +117,7 @@ func (c *GuildCommand) channelCount(guild *discordgo.Guild) *discordgo.MessageEm
 	}
 }
 
-func (c *GuildCommand) emojiCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) emojiCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "絵文字数",
 		Value:  fmt.Sprintf("%d", len(guild.Emojis)),
@@ -126,7 +125,7 @@ func (c *GuildCommand) emojiCount(guild *discordgo.Guild) *discordgo.MessageEmbe
 	}
 }
 
-func (c *GuildCommand) roleCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) roleCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "ロール数",
 		Value:  fmt.Sprintf("%d", len(guild.Roles)),
@@ -134,7 +133,7 @@ func (c *GuildCommand) roleCount(guild *discordgo.Guild) *discordgo.MessageEmbed
 	}
 }
 
-func (c *GuildCommand) stickerCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) stickerCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "ステッカー数",
 		Value:  fmt.Sprintf("%d", len(guild.Stickers)),
@@ -142,7 +141,7 @@ func (c *GuildCommand) stickerCount(guild *discordgo.Guild) *discordgo.MessageEm
 	}
 }
 
-func (c *GuildCommand) memberCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) memberCount(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "メンバー数",
 		Value:  fmt.Sprintf("%d", guild.MemberCount),
@@ -150,7 +149,7 @@ func (c *GuildCommand) memberCount(guild *discordgo.Guild) *discordgo.MessageEmb
 	}
 }
 
-func (c *GuildCommand) scale(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) scale(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	var text string
 	if guild.Large {
 		text = "大規模"
@@ -164,7 +163,7 @@ func (c *GuildCommand) scale(guild *discordgo.Guild) *discordgo.MessageEmbedFiel
 	}
 }
 
-func (c *GuildCommand) createdAt(guild *discordgo.Guild) *discordgo.MessageEmbedField {
+func (s *GuildInformationService) createdAt(guild *discordgo.Guild) *discordgo.MessageEmbedField {
 	return &discordgo.MessageEmbedField{
 		Name:   "作成日時",
 		Value:  fmt.Sprintf("<t:%d>", discord.TimestampFromSnowflake(guild.ID).Unix()),
