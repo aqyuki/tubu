@@ -65,13 +65,13 @@ func (s *DiceRollService) Handler() discord.InteractionCreateHandler {
 
 		countOpt, ok := optionMap[diceCommandCountOptionName]
 		if !ok {
-			logger.Error("option is not found", zap.String("name", diceCommandCountOptionName))
+			logger.Error("option is not found", zap.String("specified_dice_option_name", diceCommandCountOptionName))
 			session.InteractionRespond(ic.Interaction, s.errorResponse(diceCommandCountOptionName))
 			return
 		}
 		faceOpt, ok := optionMap[diceCommandFaceOptionName]
 		if !ok {
-			logger.Error("option is not found", zap.String("name", diceCommandFaceOptionName))
+			logger.Error("option is not found", zap.String("specified_dice_option_name", diceCommandFaceOptionName))
 			session.InteractionRespond(ic.Interaction, s.errorResponse(diceCommandFaceOptionName))
 			return
 		}
@@ -90,6 +90,8 @@ func (s *DiceRollService) Handler() discord.InteractionCreateHandler {
 		} else if face > diceCommandMaxFace {
 			face = diceCommandMaxFace
 		}
+
+		logger.Debug("parsed options", zap.Int64("dice_count", count), zap.Int64("dice_face_count", face))
 
 		result := make([]string, 0, count)
 		for range count {
@@ -117,6 +119,7 @@ func (s *DiceRollService) Handler() discord.InteractionCreateHandler {
 		}); err != nil {
 			logger.Error("failed to respond to the interaction", zap.Error(err))
 		}
+		logger.Info("dice roll result has been sent")
 	}
 }
 

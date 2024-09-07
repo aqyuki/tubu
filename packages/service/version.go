@@ -46,5 +46,6 @@ func (s *VersionService) Handler() discord.InteractionCreateHandler {
 		}); err != nil {
 			logger.Error("failed to respond to the interaction", zap.Error(err))
 		}
+		logger.Info("successfully responded to the version command")
 	}
 }

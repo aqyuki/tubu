@@ -37,7 +37,7 @@ func (s *SendDMService) Handler() discord.InteractionCreateHandler {
 		}
 
 		if message.Content == "" {
-			logger.Info("message content is empty. skip")
+			logger.Debug("message content is empty. skip")
 			return
 		}
 
@@ -63,5 +63,6 @@ func (s *SendDMService) Handler() discord.InteractionCreateHandler {
 			logger.Error("failed to respond to interaction", zap.Error(err))
 			return
 		}
+		logger.Info("successfully sent DM message")
 	}
 }
