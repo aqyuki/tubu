@@ -16,6 +16,8 @@ RUN --mount=type=bind,target=. go build -o /dist/tubu -ldflags="-s -w \
 
 FROM gcr.io/distroless/cc-debian12 AS runner
 
+ENV TZ=Asia/Tokyo
+
 WORKDIR /app
 COPY --from=builder --chown=root:root /dist/tubu /app/tubu
 STOPSIGNAL SIGINT
