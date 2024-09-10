@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.0](https://github.com/aqyuki/tubu/compare/v1.2.0...v2.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **tubu:** tubu 2.0に向けた更新 ([#75](https://github.com/aqyuki/tubu/issues/75))
+
+### Features
+
+* **database:** Databaseを使うためのユーティリティを追加 ([#79](https://github.com/aqyuki/tubu/issues/79)) ([07a74a0](https://github.com/aqyuki/tubu/commit/07a74a0a0e7eaa07e6e3ba6fbe6968ee61687ef6))
+* **docker:** set timezone ([#81](https://github.com/aqyuki/tubu/issues/81)) ([ad2aab8](https://github.com/aqyuki/tubu/commit/ad2aab8041fa392bb248a70a2b7deb2882a1e817))
+* **tubu:** tubu 2.0に向けた更新 ([#75](https://github.com/aqyuki/tubu/issues/75)) ([2d9e67a](https://github.com/aqyuki/tubu/commit/2d9e67a1ac9ba97f06b479ef179f99bd2fc943d6))
+
 ## [1.2.0](https://github.com/aqyuki/tubu/compare/v1.1.0...v1.2.0) (2024-08-27)
 
 
